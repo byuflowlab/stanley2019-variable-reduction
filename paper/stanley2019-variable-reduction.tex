@@ -1,0 +1,439 @@
+
+\documentclass[wes, manuscript]{copernicus}
+
+
+\begin{document}
+
+\title{Massive Simplification of the Wind Farm Layout Optimization Problem}
+
+
+% \Author[affil]{given_name}{surname}
+
+\Author[]{Andrew P.~J.}{Stanley}
+\Author[]{Andrew}{Ning}
+
+\affil[]{Brigham Young University Department of Mechanical Engineering, 701 E University Pkwy, 350 EB, Provo, UT, 84602}
+
+
+\runningtitle{TEXT}
+
+\runningauthor{TEXT}
+
+\correspondence{Andrew P.~J.~Stanley (stanley\_andrewpj@byu.net)}
+
+
+
+\received{}
+\pubdiscuss{} %% only important for two-stage journals
+\revised{}
+\accepted{}
+\published{}
+
+%% These dates will be inserted by Copernicus Publications during the typesetting process.
+
+
+\firstpage{1}
+
+\maketitle
+
+
+
+\begin{abstract}
+The wind farm layout optimization problem is notoriously difficult to solve because of the large number of design variables and extreme multimodality of the design space. 
+Because of the multimodality of the space and often discontinuous models used in wind farm modeling, the wind industry is heavily dependent on gradient-free techniques for wind farm layout optimization. 
+Unfortunately, the computational expense required with these methods scales poorly with increasing numbers of variables. Thus, many companies and researchers have been limited in the size of wind farms they can optimize.
+To solve these issues, we present the boundary-grid parameterization. This parameterization uses only five variables to define the layout of a wind farm with any number of turbines. For a 100 turbine wind farm, we show that optimizing the five variables of the boundary-grid method produces wind farms that perform within 0.5\% of farms where the location of each turbine is optimized individually, which requires 200 design variables. Our presented method unlocks the ability to optimize and study large wind farms, something that has been mostly infeasible in the past.
+\end{abstract}
+
+
+
+
+
+
+\author[]{Andrew P.J. Stanley and Andrew Ning}
+
+\affil[]{Department of Mechanical Engineering, Brigham Young University, Provo, UT, 84602, USA}
+
+
+
+
+\section{Introduction}
+
+In 2018, wind energy produced 6.6\% percent of the electricity use in the United States\footnote{https://www.eia.gov/tools/faqs/faq.php?id=427\&t=3}. With current market trends and technology, the U.S. Energy Information Administration projects that this number will rise by 1\% in both 2019 and 2020 \citep{outlook2019energy}, and the installed capacity will increase by 4\% every year through 2050 \citep{outlook2050}. In order for the U.S. and the rest of the world to meet and exceed these projections, it is necessary to be able to create efficient turbine layouts for large wind farms.
+The wind farm layout optimization problem is notoriously difficult to solve because of the large number of design variables, computationally expensive models for high fidelity simulations, and extreme multimodality of the design space (see Fig.~\ref{mm}). 
+%
+\begin{figure}
+\centering
+\includegraphics{paper-figures/mm2}
+\caption{\textbf{The complexity and multimodality of wind farm layout design space. Shown is the normalized annual energy production of a 100 turbine wind farm as a function of the location of one turbine. 99 turbines remain fixed, while one is moved throughout the wind farm.} (a) A 2-dimensional view of the design space. (b) A 3-dimensional surface which highlights the extreme variation of the peaks and valleys. This figure shows only the multimodality from two dimensions, where the true design space has 200 design variables}
+\label{mm}
+\end{figure}
+
+Because of the multimodality of the space and often discontinuous models used in wind farm modeling, the wind industry is heavily dependent on gradient-free techniques for wind farm layout optimization  \citep{herbert2014review}.
+Although these methods can be highly effective for small numbers of design variables, the computational expense required to converge scales poorly, approximately quadratically, with increasing numbers of variables. Because of this poor computational scaling, many companies and researchers have been limited in the size of wind farms they can optimize, as the number of variables typically increases with the number of turbines. Figure \ref{scale} demonstrates this principle. This figure shows the number of function evaluations required to optimize the multi-dimensional Rosenbrock function verses the number of variables. To give a sense of what these numbers mean, if this problem with 64 variables and exact-analytic gradients takes one hour to optimize, using finite difference gradients would take almost four days, while a gradient-free method would take over 20 years!
+%
+\begin{figure}
+\centering
+\includegraphics{paper-figures/scaling}
+\caption{The number of function calls required to optimize the multi-dimensional Rosenbrock function verses the number of variables. The computational expense of gradient-free and finite difference gradients scale poorly with the number of variables.}
+\label{scale}
+\end{figure}
+%
+The trends, not the exact numbers, shown in this figure are general for other optimization problems, such as wind farm layout. As the size of the problem increases, the computational expense with certain optimization methods can become unmanageable.
+
+Despite its difficulty, layout optimization is an essential step in wind farm development in order to maximize power production. Power losses of 10--20\% are typical from turbine interactions within a wind farm \citep{barthelmie2007modelling,barthelmie2009modelling,briggs2013navigating}, and can be as high as 30--40\% for farms with closely spaced wind turbines \citep{Stanley2017c}. 
+However, because the difficulties in finding optimal turbine placement increase with the number of turbines, layout optimization can quickly become infeasible for large wind farms \citep{Ning2016a}. Even so, accelerated research and understanding of the principles governing wind energy, as well as public demand for renewable energy sources are encouraging developers and communities to install farms with more wind turbines than have been typical in the past. Current turbine layout definitions and optimization methods are woefully inadequate for these increasingly large farms. 
+
+
+
+The most common current wind farm layout definitions include defining the location of each turbine directly \citep{feng2015solving,guirguis2016toward,Gebraad2017}, preassigning some locations in a wind farm as suitable turbine locations to limit size of the design space \citep{emami2010new,parada2017wind,ju2019wind}, and parameterizing the turbines as a grid \citep{gonzalez2017optimal,perez2018multidisciplinary}. Defining the location of every wind turbine directly allows the most freedom, but also requires two variables for each turbine. In addition, the design space is the most multimodal. 
+%
+%Limiting the design space by predetermining acceptable turbine locations or parameterizing the turbine locations with a simple grid allow models and optimization algorithms to solve for the layouts of wind farms with more wind turbines, but often produces simplistic wind farm designs, which underperform for realistic scenarios.
+%
+If one limits the design space by predetermining acceptable turbine locations or parameterizing the turbine locations with a simple grid, they are able to optimize larger wind farms. However, these methods produce simplistic wind farm designs, which underperform for most realistic scenarios.
+
+
+In this paper we present the boundary-grid (BG) layout parameterization, a new wind farm layout parameterization. This new method solves the challenges that have previously made wind farm layout optimization so difficult. BG parameterization uses only five variables, and can produce layouts that perform within 0.5\% of the layouts achieved by directly optimizing the location of each wind turbine. 
+%who is we?
+With some of the most advanced wind farm optimization methods that have previously been available, we can directly optimize the location of every turbine in a 100 turbine wind farm in 4--5 hours. More common methods take on the order of days or longer. With BG parameterization, we can optimize a 100 turbine wind farm in 3 minutes. Additionally, this new parameterization dramatically reduces the multimodality of the design space compared to direct layout optimization (compare Figs.~\ref{mm} and \ref{multimodality}b). Finally, BG parameterization has additional benefits, including a regular, aesthetically pleasing layout, naturally defined roads or shipping lanes, and easily defined cabling between turbines. This technique can immediately be applied to wind farm design to obtain excellent wind farm layouts with limited computational resources.
+
+
+\section{Boundary-Grid Parameterization}
+When the locations of wind turbines in a farm are optimized directly, the final layout often follows two general rules. First, a large fraction of turbines are grouped on or near the wind farm boundary. Second, the turbines that are not positioned on the boundary are loosely arranged in rows throughout the farm (Fig.~\ref{variables}a). 
+By observing these patterns in optimal wind farm layouts, we defined our new layout parameterization such that it would create wind farms that filled these requirements.
+
+\subsection{New Layout Variables}
+In BG parameterization, the turbines are divided into two groups: the boundary and the inner grid (Fig.~\ref{variables}b). The boundary turbines are spaced around the circumference of the wind farm and are defined with one design variable. The rest of the turbines in the farm make up the inner grid, which is defined with four design variables for a total of five variables to describe the location of every turbine in the farm.
+The boundary turbines are placed on the wind farm boundary, spaced equally traversing the perimeter. These are defined by one variable, s, which is the distance along the perimeter where the first turbine, or start turbine, is placed. This in turn defines the position of every turbine around the boundary (Fig.~\ref{variables}c). The inner grid turbines are defined by four design variables: $dx$, $dy$, $b$, and $\theta$. 
+%
+The grid spacing, $dx$ and $dy$, are the distance between columns and rows in the grid, $b$ is the offset distance, which defines how far consecutive rows are offset, $\theta$ is the grid rotation angle, which rotates the entire grid (Fig.~\ref{variables}d). The grid offset could also be defined as an angle, however we have used a distance as the gradients are more conducive to optimization.
+
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/layout-variable.pdf}
+\caption{\textbf{Example 100 turbine wind farm layouts, and parameterized wind turbine layout definition. Each dot is to scale, representing the wind turbine diameter.} (a) Wind farm layout when the position of each turbine has been optimized directly. This optimization required 200 design variables, the x and y location of each turbine. (b) Wind farm layout optimized with boundary-grid parameterization. This optimization required five design variables, shown in (c) and (d). (c) The start location design variable, $s$. (d) The four variables defining the inner grid: the grid spacing, $dx$ and $dy$, the grid offset $b$, and the rotation, $\theta$.}
+\label{variables}
+\end{figure}
+%(b) Optimized grid layout. Four grid variables (see (f)) have been optimized to maximize annual energy production. (c) Baseline grid wind turbine layout.
+
+
+\subsection{Selection of Discrete Values}
+
+There are some discrete values which are important in our formulation, namely the number of turbines which are placed along the boundary and how many are in the grid, how many rows and columns are in the grid, and how the rows and columns are organized. We present some rules that we have found effective in determining these discrete values for all wind roses, wind farm boundaries, and wake models that we tested. Each individual case may benefit slightly from a more specialized selection of these values but our method works well across all cases tested.
+
+The number of turbines placed on the boundary is determined by the wind farm perimeter and turbine rotor diameter. If the perimeter is large enough, 45\% of the wind turbines are placed on the boundary. In some cases, the wind farm perimeter is small, and would result in turbines that are too closely spaced if 45\% were placed around the boundary. 
+%In this case, the number of boundary turbines is reduced such that the perimeter traversed between each turbine is the minimum turbine spacing desired in the wind farm times the square root of two. This ensures that even in the worst-case scenario where the wind farm boundary has a right angle, the minimum turbine spacing is preserved. 
+In this case, the number of boundary turbines is reduced until the minimum desired turbine spacing in the wind farm is preserved.
+No matter how many turbines are placed around the boundary, they are always spaced equally traversing the perimeter, and all of the remaining turbines are placed in the inner grid.
+
+The number of rows, columns, and their organization in the grid is determined with the following procedure. First, $dy$ is set to be four times $dx$, $b$ is set such that turbines are offset twenty degrees from those in adjacent rows, and $\theta$ is initialized randomly. Then, $dx$ is varied with $\theta$ remaining constant, and $dy$ and $b$ changing to fulfill the requirements prescribed in the initialization definition, until the correct number of turbines are within the wind farm boundary. During optimization, each of the grid variables can change individually, however the discrete values remain fixed.
+
+
+\section{Wind Farm Modeling}
+\subsection{Wind Turbine Parameters}
+In the testing of BG wind farm layout parameterization method, we modeled the turbine parameters after the IEA 3.35-MW reference turbine\footnote{https://www.nrel.gov/wind/assets/pdfs/se17-9-iea-wind-task-37-systems-engineering.pdf}. The relevant parameters are a rotor diameter of 130 meters, hub height of 110 meters, and a rated electrical power of 3.35 MW. The thrust coefficient was assumed idealized and constant, $C_T = 8/9$. The power curve was defined as a piecewise equation in Eq.~\ref{power-curve}.
+%
+\begin{equation}
+                P_i(V) = 
+                \begin{cases} 
+                    0 & V < V_{\text{cut-in}} \\
+                    P_{\text{rated}}(\frac{V}{V_{\text{rated}}})^3 & V_{\text{cut-in}}\leq V < V_{\text{rated}} \\
+                    P_{\text{rated}} & V_{\text{rated}} \leq V < V_{\text{cut-out}} \\
+                    0 & V \geq V_{\text{cut-out}}
+                \end{cases}
+            \label{power-curve}
+\end{equation}
+%
+In this power curve definition, $P_i$ is the power produced by an individual wind turbine, $V$ is the hub velocity at that turbine, $P_{\text{rated}}$ is 3.35 MW, $V_{\text{rated}}$ is 10 m/s, $V_{\text{cut-in}}$ is 3 m/s, and $V_{\text{cut-out}}$ is 25 m/s.
+
+
+\subsection{Wind Farm Details}
+The major benefit of wind turbine layout parameterization comes for large wind farms. For farms with just a few turbines, the layout can be optimized directly with a small amount of design variables. In such cases with few design variables, there is little to no benefit gained from intelligently parameterizing the design space. In this study, each wind farm layout that we optimized had 100 wind turbines, to demonstrate the benefits of BG parameterization for large wind farms. 
+
+We tested the performance of our parameterization method on wind farms with different average turbine spacing: four, six, and eight rotor diameters shown in Fig.~\ref{results-spacing}.
+%In addition to different boundary shapes, 
+%We modeled and optimized wind farms with we also tested our parameterization method on wind farms with different average turbine spacing: four, six, and eight rotor diameters shown in %Fig.~\ref{spacing}. 
+%Fig.~\ref{results-spacing}.
+In addition to testing wind farms with different turbine spacing, we modeled and optimized several different wind farm boundaries in this study: the boundary of the Princess Amalia wind farm, a real farm in the North Sea \citep{van2012maximum,gebraad2015maximum,kanev2018active}, a circle, and a square to demonstrate the sharp angles that can occur in wind farm boundaries. These boundaries are shown in %Fig.~\ref{boundaries}.
+Fig.~\ref{results-bounds}.
+%%
+%\begin{figure}
+%\centering
+%\includegraphics{paper-figures/bounds}
+%\caption{\textbf{The three wind farm boundaries considered in this study. Each of the boundaries have the same area.} (A) The boundary shape from the convex hull of the turbine locations in the Princess Amalia wind farm. (B) A simple circular wind farm. (C) A simple square wind farm, demonstrating the extreme angles that can occur in wind farm boundaries.}
+%\label{boundaries}
+%\end{figure}
+%
+%
+%
+%In addition to different boundary shapes, we also tested our parameterization method on wind farms with different average turbine spacing: four, six, and eight rotor diameters shown in %Fig.~\ref{spacing}. 
+%Fig.~\ref{results-spacing}.
+%The average spacing of the wind farm was defined with the wind farm area, which was set to be the same area as a square wind farm in which all the turbines are arranged in a square grid with the desired turbine spacing. 
+%%
+%\begin{figure}
+%\centering
+%\includegraphics{paper-figures/spacing}
+%\caption{\textbf{The three average turbine spacings considered in this study.} (A) Average spacing of 4 rotor diameters, (B) 6 rotor diameters, and (C) 8 rotor diameters.}
+%
+%\label{spacing}
+%\end{figure}
+
+
+\subsection{Wake Model}
+We calculated the wind speed deficit in the wake behind a wind turbine with a simple Gaussian wake model, modified from that originally developed by Bastankhah and Port\'e-Agel \citep{bastankhah2016experimental,Baker2019}. The wake model is defined with Eqs. \ref{eq:sigma} and \ref{eq:gaus}.
+%
+\begin{equation}
+\sigma = kx+\frac{D}{\sqrt{8}}
+\label{eq:sigma}
+\end{equation}
+%
+\begin{equation}
+l_i = \Bigg(1-\sqrt{1-\frac{C_T}{8\sigma^2/D^2}}\Bigg)\exp{\Big[\frac{-1}{2}\Big(\frac{y}{\sigma}\Big)^2\Big]}
+\label{eq:gaus}
+\end{equation}
+%
+In these equations, $x$ is the distance between turbines for which the wake loss is being calculated in line with the wind direction, $y$ is the cross stream distance between turbines, $D$ is the rotor diameter of the wind turbines, $k$ is a parameter calculated from the turbulence intensity and is equal to 0.0325, $C_T$ is the thrust coefficient, and $l_i$ is the wake loss contribution from a single turbine. This model is a simplification of the model proposed by Bastankah and Port\'e-Agel by calculating all wake losses in the horizontal plane, and by assuming a potential core length of zero.
+%
+The total loss at any point in the wind farm was given by the L2-norm of the individual loss contributions from each turbine shown in Eq. \ref{eq:loss}.
+%
+\begin{equation}
+L = \sqrt{\Bigg(\sum_{i=1}^\text{nTurbines}l_i^2\Bigg)}
+\label{eq:loss}
+\end{equation}
+%
+Finally, the wind speed at any point is expressed in Eq. \ref{eq:speed}.
+%
+\begin{equation}
+V = U(1-L)
+\label{eq:speed}
+\end{equation}
+%
+In this equation, $V$ is the wind speed affected by wake losses, $U$ is the free-stream wind speed, and $L$ is the total wake loss.
+
+\subsection{Wind Resource}
+As the goal of this paper is to demonstrate the performance of our layout parameterization method in wind farm optimization for any scenario, we chose three different wind roses from cities in California, USA: North Island, Ukiah, and Victorville\footnote{https://mesonet.agron.iastate.edu/sites/windrose.phtml?station=AAT\&network=CA\_ASOS}. We divided the wind roses into 23 equal bins for each wind rose, with an associated directionally averaged wind speed, shown in Fig.~\ref{roses}.
+%
+\begin{figure}
+\centering
+\includegraphics{paper-figures/roses}
+\caption{\textbf{The three wind roses and associated average wind speeds used in this study.} The wind resources are from (a) North Island, California, (b) Ukiah, California, and (c) Victorville, California.}
+\label{roses}
+\end{figure}
+%
+We have assumed that the wind speed distribution from each wind direction can be approximated with a Weibull distribution defined with the directionally averaged wind speeds (Fig.~\ref{weibull-fig} and Eq.~\ref{weibull-eq}). Weibull distributions have been shown to be good representations of real wind speed data \citep{justus1978methods,rehman1994weibull,seguro2000modern}. 
+
+	\begin{minipage}{0.5\textwidth}
+            \includegraphics{paper-figures/weibull}
+            
+            \captionof{figure}{\label{weibull-fig} Example Weibull distributions for two different average wind speeds. Each wind direction is associated with an average wind speed (shown in Fig.~\ref{roses}), which is used for the value $U_\text{mean}$.}
+        \end{minipage}
+    %
+        \begin{minipage}{0.5\textwidth}
+            \begin{equation}
+                f(U,U_\text{mean}) = \frac{k}{U_\text{mean}}\Big(\frac{U}{U_\text{mean}}\Big)^{k-1}e^{-(U/U_\text{mean})^k}
+            \label{weibull-eq}
+            \end{equation}
+        \end{minipage}\quad
+        %
+        
+        \bigskip
+\noindent In Eq.~\ref{weibull-eq}, $f$ is the probability of wind for a given wind speed, $U$ is any wind speed, and $U_\text{mean}$ is the directionally averaged wind speed for the direction bin of interest. The shape parameter, $k$, is assumed to be equal to 2.0 for every wind direction, which is a realistic value for the Weibull distributions that represent real wind speed probability data \citep{rehman1994weibull,seguro2000modern}.
+For each wind direction, we have sampled the Weibull distribution at five equally spaced points. Five wind speed samples and 23 wind direction samples are chosen as the sampling amount required to converge to the true wind farm production for a given wind farm \citep{Stanley2018a}. 
+
+
+
+\section{Optimization}
+
+In this paper we compare how optimizing with BG wind farm layout parameterization compares to two common currently used parameterization methods. We have optimized wind farms using a simple grid parameterization (referred to as ``grid optimization''), BG parameterization (``BG''),  and by directly optimizing the location of each turbine independently (``direct optimization''). Examples of these layouts, along with the baseline layout that was used to compare results in Sec.~\ref{max-results}, are shown in Fig.~\ref{opt-cases}.
+%
+\begin{figure}
+\centering
+\includegraphics{paper-figures/opt-cases}
+\caption{\textbf{Example optimal layouts achieved with each parameterization method. These are 100 turbine layouts, with an average turbine spacing of four rotor diameters and the Princess Amalia wind farm boundary. They were optimized with the wind rose from North Island, California.} (a) The baseline grid to which other methods were compared in Sec.~\ref{max-results}. (b) An example optimized grid layout. (c) An example optimized boundary-grid layout. (d) An example layout that was optimized directly.}
+\label{opt-cases}
+\end{figure}
+
+In each case, the objective function of the optimization was to maximize the annual energy production (AEP) of the wind farm, shown in Eq. \ref{eq:aep}. 
+%
+\begin{equation}
+\text{AEP} = 8760 \sum_{i=1}^{23}\sum_{j=1}^5P(\phi_i,U(\phi_i)_j)f_if_j
+\label{eq:aep}
+\end{equation}
+%
+In this equation, 8760 is the number of hours in a year, $P$ is the wind farm power production, $\phi$ is the wind direction, $V$ is the free-stream wind speed, $f_i$ is the wind direction probability, and $f_j$ is the wind speed probability.
+%
+The design variables were determined by the optimization method that was used. For the grid optimization, the design variables were the grid spacing in the x and y directions, $dx$ and $dy$, the grid offset $b$, and the grid rotation $\theta$ for a total of four variables. The discrete variables in the grid were determined with the same method described above to find the discrete variables in the grid portion of the BG parameterization, except $dx$ and $dy$ were equal while determining the grid format. We experimented with different values of $dy$ during grid initialization and found that setting them equal provided the best results. The design variables for the BG optimization were the same as the grid optimization for the inner grid turbines, and an additional variable $s$ defining the start location of the boundary turbines for a total of five design variables. For the direct optimization methods, the design variables were the x and y locations of each turbine in the wind farm for a total of 200 design variables.
+%
+In each optimization, we applied turbine spacing constraints and boundary constraints. The turbine hub locations were constrained to not be within two rotor diameters of any other turbine hub. Additionally, the turbine hubs were constrained to be within the defined wind farm boundary. This optimization is expressed in Eq.~\ref{opt-eq}.
+%
+\begin{equation}
+			\begin{aligned}
+				& \text{maximize}
+					& & \text{AEP} \\
+                & \text{w.r.t.} 
+                 && dx,~ dy,~b,~ \theta
+                 & \text{(grid)}\\
+                 &&& dx,~ dy,~b,~ \theta,~ s
+                 & \text{(BG)}\\
+                	&&& x_i,~ y_i ~ (i = 1, \ldots, 100)
+		& \text{(direct)}\\
+				& \text{subject to}
+					& & \text{boundary constraints} \\
+						&&& \text{spacing constraints} \\
+			\end{aligned}
+		\label{opt-eq}
+		\end{equation}
+
+We used the optimizer SNOPT, which is a gradient-based optimizer well suited for large-scale nonlinear problems such as the wind farm layout optimization problem \citep{gill2005snopt}. 
+A challenge of gradient-based optimization is the tendency to converge to local solutions. In order to better search design space, we optimized the problem to convergence 100 times with randomly initialized design variables. This was done for each parameterization method, lending confidence that the best solution after optimizing the 100 random starts is near the global optimum. 
+%For every wind farm that we consider, we optimized the wind farm layout to convergence 100 times with each parameterization method. 
+From the random starting points, we were also able to determine the spread of solutions obtained with each layout parameterization. 
+
+We used exact-analytic gradients in each optimization. The gradients for each portion of the model were obtained with an automatic differentiation source code transformation tool, Tapenade \citep{hascoet2013tapenade}. To combine the gradients to get the total derivative of the objective with respect to each of the design variables, we used the open-source optimization framework, OpenMDAO, which propagates the partial derivatives of each small section of the model and calculates the gradients of the entire system \citep{gray2010openmdao}.
+
+Using exact, rather than finite-difference, gradients is important in this study because the computational expense required for optimization problems with increasing design variables scales better with exact gradients (see Fig.~\ref{scale}). For the parameterized optimizations, the exact gradients were not as vital in terms of computational expense, but they were very important for the direct optimizations which had 200 design variables. In addition to reducing the function calls required to reach convergence, the exact gradients helped the optimizer converge to a better solution, avoiding many of the numerical difficulties that often plague the optimization process when using finite-difference gradients. 
+
+
+
+
+\section{Results and Discussion}
+In this section we demonstrate how the optimal wind farms using BG parameterization compared to wind farms that have been optimized directly, or with a common grid parameterization. We will discuss the best results, the computation expense required to optimize, and the multimodality of the design space with each parameterization method.
+
+\subsection{Best Results}
+\label{max-results}
+Figure \ref{results-max} 
+%and Table \ref{tab-max} 
+shows the best results of the 100 random starts for each parameterization method, compared to a simple baseline grid (Fig.~\ref{opt-cases}a). In Fig.~\ref{results-max}, subfigures a, b, and c show results for varied turbine spacing, wind roses, and boundary shapes, respectively.
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/results_max.pdf}
+\caption{\textbf{The best annual energy production achieved with 100 randomly initialized optimizations. Shown are the best results from the grid turbine parameterization (four design variables), our new boundary-grid parameterization method (five design variables), and by directly optimizing the location of each turbine (200 design variables). Results are shown as a percent increase over a baseline grid layout.} (a) Varied average turbine spacing in the wind farm. (b) Varied wind rose. (c) Varied boundary shape.}
+\label{results-max}
+\end{figure}
+
+Figure \ref{results-max}a shows the optimal results for wind farms with varied average turbine spacing, with the North Island wind rose and Princess Amalia wind farm boundary. For each wind farm, BG layout parameterization performs very well compared to the direct layout optimization results. The worst case, for the smallest wind farm with an average turbine spacing of four rotor diameters, is a mere 0.39\% difference between the improvement from the direct optimization and the improvement from our parameterization. For the largest turbine spacing, an average spacing of eight rotor diameters, BG optimization actually performs slightly better than the direct optimization.
+For the smallest, most tightly packed wind farm, the optimized grid performs significantly better than the baseline, but underperforms by about 2\% compared to the other parameterization methods. Even at an average turbine spacing of six rotor diameters, the direct and parameterized optimizations perform about 0.7\% better than the grid optimization, which may or may not be significant depending on the uncertainty of the models used. For the largest wind farm, the optimal grid performs almost identically to the other parameterization methods. For large wind farms where the turbines are spaced very far apart, wakes are mostly recovered by the time they reach other turbines in the wind farm. In these cases, even an optimized grid performs almost as well as the direct optimization.  
+
+Figure \ref{results-max}b shows results for optimized wind farms with different wind resources, with an average turbine spacing of four rotor diameters and the Princess Amalia wind farm boundary. The wind roses and the associated directionally averaged wind speeds are shown in Fig.~\ref{roses}. 
+%The North Island and Victorville roses are both bimodal. The Victorville wind rose has significant wind resources from the North and West, with high average wind speeds compared to the other two wind roses. The North Island rose has the majority of the wind from the Northwest to the Northeast, with a slight contribution from the West. The Ukiah wind rose has wind resources predominately along the southwest-northeast axis, and has fairly constant average wind speeds. 
+%
+As with the varied turbine spacing results, the BG results are almost identical to the direct optimizations. The largest difference occurred for the Ukiah wind rose, for which direct optimization performed 0.43\% better than the BG optimization. Additionally, for all wind resources, the BG optimizations perform significantly better than the simple grid optimizations. For the North Island and Victorville roses, the BG layout optimization performs about 1.5\% better than the grid parameterization, where for the Ukiah rose the parameterized is 3.5\% better.
+
+Figure \ref{results-max}c shows the results for a varied wind farm boundary. The farms in this subfigure have an average turbine spacing of four rotor diameters and the North Island wind rose. Consistent with the previous results, the parameterized optimization performs superbly. The worst case difference is 0.39\% compared to the direct optimization, which occurs for the most complex Amalia wind farm boundary. The parameterized optimization performs very slightly, 0.02\%, better than the direct optimization for the square wind farm boundary. For the circle and square boundaries, the optimized grid parameterization performs very well compared to the parameterized and direct optimizations. The grid optimization for the circle boundary is only 0.43\% worse than the parameterized optimization and only 0.62\% worse than the direct optimization. At least for the North Island wind rose, the grid parameterization may be sufficient for the simple, symmetric boundaries.
+ 
+In terms of the best achievable wind farms with each parameterization method, our new  BG method performs almost identically to optimizing the location of each wind turbine directly. Of all the cases we tested, the largest difference between the BG and direct results was 0.43\%, and in some cases the BG results were slightly better than the direct optimization. With only five design variables, we can create wind farms that perform the same as farms that have been designed with 200 variables. While the grid parameterization is able to achieve good results for some wind farms, it often performs much worse than our parameterization. One additional variable is a small price to pay for significant improvement in optimal wind farm design. 
+
+%\begin{table}
+%\centering
+%\begin{tabular}{ |p{2cm}|p{2cm}|p{2cm}|p{2cm}| } 
+%\hline
+%  & direct & parameterized & grid \\
+%\hline
+%\hline
+%\multicolumn{4}{| c |}{varied turbine spacing}\\
+%\hline
+%4 D  & 6.771 & 6.381 & 4.765\\
+%6 D  & 2.807 & 2.758 & 2.080\\
+%8 D  & 2.168 & 2.216 & 1.983\\
+%\hline
+% \multicolumn{4}{| c |}{varied wind resource}\\
+%\hline
+%North Island  & 6.771 & 6.381 & 4.765\\
+%Ukiah  & 5.559 & 5.134 & 1.597\\
+%Victorville & 5.737 & 5.572 & 4.085 \\
+%\hline
+%  \multicolumn{4}{| c |}{varied boundary}\\
+%\hline
+%Amalia  & 6.771 & 6.381 & 4.765\\
+%circle & 7.545 & 7.352 & 6.924\\
+%square & 7.456 & 7.476 & 6.762\\
+%\hline
+%\end{tabular}
+%\caption{\label{tab-max}Here is the caption}
+%\end{table}
+
+
+
+
+\subsection{Computational Expense}
+The utility of any wind farm layout parameterization is not only measured by the ability to create high energy producing wind farms, but by the ability to do so quickly and reliably. Figures \ref{results-spacing}, \ref{results-roses}, and \ref{results-bounds} are histograms showing optimal results and the computational expense required for each of the 100 optimizations run for each wind farm and parameterization method. In each figure, Subfigures a-c show the normalized optimal AEP for each of the 100 runs, and Subfigures d-f show the number of function required to converge to a solution. The AEP results have each been normalized by the maximum AEP achieved by the direct optimizations for the associated wind farm. Also note that the number of function calls are shown with a log scale.
+
+In general, the grid and the BG optimal AEP results have a similar spread, with the BG results shifted up higher. Compared to the direct optimizations, the grid and BG optimizations have a larger spread in optimal solutions. This is a consequence of the discrete variables that are initialized at the start of each optimization run. The number of rows and columns, as well as their organization in the grid are determined by the randomly initialized rotation design variable, $\theta$. Some of these grid formations are more desirable than others, leading to higher AEP values. This spread in optimal solutions is not a significant issue, because the number of functions calls required for the grid and BG optimizations are an order of magnitude lower than that required by the direct optimization. This allows for many randomly initiated runs in a short amount of time. If it did become an issue, the spread could be reduced by predefining the discrete grid variables, or including them as design variables in a gradient-free formulation.
+
+With regards to the function calls required to converge, the grid optimizations required about one third of the function calls to converge compared to the BG optimizations, while the direct optimizations required about an order of magnitude more. Function calls are an important measure of computational expense, as they are correlated with time and processing power required to optimize. Here it is important to remember that our results were obtained with exact-analytic gradients, meaning that one function call was required to obtain the wind farm AEP, as well as the gradients with respect to each of the design variables. The same is true of the constraints, one function call gave both the constraint values and the gradients. Without exact gradients, a finite-difference method would need to be used to calculate the gradients. At every optimization step, finite-difference gradients require one (forward or backward difference) or two (central difference) additional function calls for every design variable to approximate the gradients. Thus, if forward-difference gradients were used rather than exact, the grid optimizations would need about four times as many function calls to reach a solution, the BG optimization would need about five times as many function calls, and the direct optimization would need 200 times as many function calls to converge. This is the best case scenario, as optimizations with finite-difference gradients often have trouble converging. Compared to gradient-free optimization, the exact analytic gradients are vital. The direct optimization with a gradient-free technique would be near impossible because of the massive required computational expense \citep{Ning2016a,Thomas2018}.
+%Additionally, gradient-based optimization with exact-analytic gradients represent the state of the art in wind farm layout optimization for large wind farms. Gradient-free algorithms are more common in the wind industry \citep{herbert2014review}, but for large wind farms require much more computational resources \citep{Ning2016a,Thomas2018}. Thus, BG parameterization saves significant computational resources compared to advanced optimization techniques. These savings would increase by two or more orders of magnitude compared to more common methods.
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/results_spacing.pdf}
+\caption{\textbf{Results from 100 randomly initialized optimizations for wind farms with varied average turbine spacing and 100 wind turbines. The farm optimized had the Princess Amalia boundary, and the wind rose from North Island, California. Shown are results using the grid turbine parameterization, our new boundary-grid parameterization, and by direct optimization.} The optimal annual energy production distribution achieved for each of the optimization runs, in wind farms with varied turbine spacing of 4, 6, and 8 rotor diameters for subfigures (a), (b), and (c), respectively. The number of function calls required to converge for each of the optimization runs, in wind farms with varied turbine spacing of 4, 6, and 8 rotor diameters for subfigures (d), (e), and (f), respectively. }
+\label{results-spacing}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/results_roses.pdf}
+\caption{\textbf{Results from 100 randomly initialize optimizations for wind farms with varied wind roses and 100 wind turbines. The farm optimized had the Princess Amalia boundary, and the average turbine spacing was four rotor diameters. Shown are results using the grid turbine parameterization, our new boundary-grid parameterization, and by direct optimization.} The optimal annual energy production distribution achieved for each of the optimization runs, in wind farms with varied wind roses.  Wind rose from (a) North Island, California, (b) Ukiah, California and (c) Victorville, California. The number of function calls required to converge for each of the optimization runs, in wind farms with varied wind roses. Wind Rose from (d) North Island, California, (e) Ukiah, California and (f) Victorville, California. }
+\label{results-roses}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/results_bounds.pdf}
+\caption{\textbf{Results from 100 randomly initialize optimizations for wind farms with varied wind farm boundaries and 100 wind turbines. The average turbine spacing was four rotor diameters, and the wind rose was from North Island, California. Shown are results using the grid turbine parameterization, our new boundary-grid parameterization, and by direct optimization.} The optimal annual energy production distribution achieved for each of the optimization runs, in wind farms with varied boundary shapes.  (a) Princess Amalia wind farm boundary. (b) Circular wind farm. (c) Square wind farm. The number of function calls required to converge for each of the optimization runs, in wind farms with varied boundary shapes.  (d) Princess Amalia wind farm boundary. (e) Circular wind farm. (f) Square wind farm. }
+\label{results-bounds}
+\end{figure}
+
+
+\subsection{Multimodality}
+
+One of the major difficulties of the wind farm layout optimization problem is the extreme multimodality of the design space (Fig.~\ref{mm}). There can be thousands or even millions of local solutions, often varying drastically in their quality. Figure \ref{multimodality} shows one dimensional sweeps across the design variables, for each of the three different parameterization methods discussed in this paper. Because of the number of variables in this problem, it is difficult to fully represent the full design space graphically, however this figure is a good indicator of the multimodality of the different design spaces. Figures \ref{multimodality}a, \ref{multimodality}b, and \ref{multimodality}c show the multimodality of the grid, BG, and direct layout parameterizations, respectively. 
+
+\begin{figure}
+\centering
+\includegraphics{paper-figures/multimodality.pdf}
+\caption{ \textbf{One dimensional sweeps across the design space of each parameterization method discussed in this paper. These figures show the multimodality of each of the design spaces.} (a) The simple grid parameterization. (b) Our newly presented boundary-grid parameterization. (c) Moving the location of one wind turbine across the wind farm in $x$ and $y$ (refer to Fig.~\ref{mm}). With the direct turbine layout definition there are actually 200 variables. This figure shows the multimodality in just 2 of these variables, where the whole design space is much more complex.}
+\label{multimodality}
+\end{figure}
+
+Parameterizing the design space with a grid and with the BG method (Figs.~\ref{multimodality}a and \ref{multimodality}b) does not completely remove the multimodality of the wind farm layout problem. However, it does result in a smoother response and fewer local minima compared to the design space when each of the turbines are optimized directly. These function spaces can be explored easily with a few random starting locations, or with a gradient-free optimization method. 
+The design space when varying the location of individual turbines (Figs.~\ref{mm} and \ref{multimodality}c) is much more noisy, filled with comparatively larger peaks and valleys in the design space. These figures only show the design space with respect to the location of one turbine, which is defined with two variables. The full space consists of the location of all 100 turbines, or 200 variables, for which the multimodality and overall noisiness of the design space is exacerbated.
+%
+Figures \ref{multimodality}a and \ref{multimodality}b do not show the function space with respect to the discrete grid variables. Even so, considering each combination of the feasible grid variables is more desirable than the difficulty involved with the 200-dimensional function space of the direct layout definition.
+
+
+\section{Additional Benefits to BG Parameterization}
+
+BG parameterization requires few variables, produces wind farm layouts that perform similarly to ones that have been optimized directly with much lower computational expense, and reduces the multimodality of the design space. In addition, there are some innate design characteristics that are useful in wind farm design. First, the layouts produced are regular, aesthetically pleasing patterns. To the untrained eye, BG parameterization looks well designed compared to the seemingly random layouts that are often produced when every turbine location is optimized individually. This can play an important role in the public perception of large scale wind energy. Second, BG parameterization has clear roads or shipping lanes naturally built into the design. Roads and shipping lanes are requirements in wind farm design that are often neglected in research studies. Finally, the layouts produced have a clear cabling pattern. Wind farm cabling is an expensive and complex part of wind farm design. With BG parameterization, cabling requirements can be clearly minimized by running cables across each of the rows, and around the boundary without the need for complex cabling algorithms.
+
+
+\section{Conclusions}
+In this paper, we have presented the new boundary-grid wind farm layout parameterization method. This method uses only five design variables, regardless of the number of wind turbines, but is capable of producing turbine layouts that perform just as well to layouts where the location of each wind turbine has been optimized directly. Of all the cases that we tested, the largest difference in AEP improvement over a common baseline between BG layout optimization and a direct layout optimization was 0.43\%, and in a few cases BG parameterization even performed better. BG parameterization also performed better than a simple grid parameterization in all cases tested. 
+
+In addition to being able to match the optimal energy production of wind farms that were directly optimized, BG parameterization requires an order of magnitude fewer function calls to reach a solution. This is with exact-analytic gradients, which means if finite-difference gradients or a gradient-free optimization method were used instead, our parameterization method would require at least two to three orders of magnitude fewer function calls to optimize.
+%
+BG parameterization also reduces the multimodality of the design space, simplifying the optimization process and making it easier to find a good solution.
+
+The BG layout definition places a portion of the wind turbines around the boundary, spaced equally traversing the wind farm perimeter. The rest of the turbines are placed in a grid inside the farm boundaries. The wind farm layouts created have a regular, aesthetically pleasing pattern, naturally defined roads and shipping lanes, and an easily defined cabling pattern. 
+%
+BG parameterizations solves many of the problems that typically accompany wind farm layout optimization. It is a simple, easily implemented technique that can immediately be applied by researchers and wind farm developers, playing and important role in continued growth of wind energy.
+
+\section*{Code and data availability}
+The code written for this paper is included here: doi:10.5281/zenodo.2530839 (Stanley, 2019). All dependencies, with the exception of the optimizer SNOPT are open source. Also in this set are the optimal wind farm layouts mentioned in Sect. 3, with the path stanley2018-turbine-design/latex-files/Figures/optimalLayouts/.
+
+\section*{Author Contributions}
+APJS performed every part of this research and is the
+primary author. AN helped develop ideas and direction, provided
+feedback, and provided editing for the paper.
+
+\section*{Competing Interests}
+The authors declare no competing interests.
+
+
+
+\bibliographystyle{copernicus}
+\bibliography{references.bib}
+
+\end{document}
