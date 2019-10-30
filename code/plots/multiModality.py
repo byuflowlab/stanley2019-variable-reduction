@@ -442,12 +442,12 @@ if __name__ == "__main__":
        835358.34578171, 835432.48139145, 835484.7544569 , 835584.98976928])
 
     #
-    ax31.plot(d_x,AEP_x,color='C3',alpha=0.5)
+    ax31.plot(d_x,AEP_x,color='C2',alpha=0.5)
     # ax1.set_xticks([2.,3.,4.])
     # ax1.set_xticklabels(['2','3','4'])
     # ax1.set_xlabel(r'$dx$ '+'(rotor\ndiameters)')
 
-    ax32.plot(d_y,AEP_y,color='C3',alpha=0.5)
+    ax32.plot(d_y,AEP_y,color='C2',alpha=0.5)
     # ax2.set_xticks([7.,8.,9.])
     # ax2.set_xticklabels(['7','8','9'])
     # ax2.set_xlabel(r'$dy$ '+'(rotor\ndiameters)')
@@ -769,5 +769,5 @@ if __name__ == "__main__":
     plt.subplots_adjust(top = 0.93, bottom = 0.1, right = 0.96, left = 0.1,
             hspace = 0.7, wspace = 1.0)
 
-    plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/multimodality.pdf',transparent=True)
+    # plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/multimodality.pdf',transparent=True)
     plt.show()

@@ -130,5 +130,5 @@ ax1.text(-2800.,2800.,'A',fontsize=14,weight='bold',color='black')
 ax2.text(-2800.,2800.,'B',fontsize=14,weight='bold',color='black')
 ax3.text(-2800.,2800.,'C',fontsize=14,weight='bold',color='black')
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/bounds.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/bounds.pdf',transparent=True)
 plt.show()

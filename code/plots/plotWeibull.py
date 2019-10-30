@@ -5,11 +5,13 @@ import sys
 sys.path.insert(0, '/Users/ningrsrch/Dropbox/Projects/reduction/')
 from position_constraints import *
 import scipy as sp
+import scipy.special
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from windRoses import *
 
-def weibull(x,L):
+def weibull(x,mu):
     k = 2.0
+    L = mu/(scipy.special.gamma(1.+1./k))
     return k/L*(x/L)**(k-1)*np.exp(-(x/L)**k)
 
 """colors"""
@@ -57,5 +59,5 @@ ax1.legend(prop={'size': 8,'family':'serif'})
 plt.subplots_adjust(top = 0.9, bottom = 0.22, right = 0.9, left = 0.22,
             hspace = 0.0, wspace = 0.)
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/weibull.pdf',transparent=True)
+plt.savefig('/Users/ningrsrch/Dropbox/Projects/stanley2019-variable-reduction/paper/paper-figures/weibullR1.pdf',transparent=True)
 plt.show()

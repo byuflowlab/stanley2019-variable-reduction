@@ -15,8 +15,8 @@ olive = '#ACBD78'
 
 robin = 'C0'
 nectar = 'C1'
-tuscan = 'C2'
-royal = 'C3'
+tuscan = 'C1'
+royal = 'C2'
 
 nTurbs = 100
 rotorDiameter = np.ones(nTurbs)*130.
@@ -528,5 +528,5 @@ ax5.text(-500.,-4000.,'d',fontsize=11,color='black')
 plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0,
             hspace = 0, wspace = 0)
 # plt.tight_layout()
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/layout-variable.pdf')
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/PJ-param.pdf',transparent=True)
 plt.show()

@@ -4,15 +4,14 @@ import sys
 sys.dont_write_bytecode = True
 import time
 import sys
-sys.path.insert(1, '/home/flowlab/PJ/reduction')
+sys.path.insert(1, '/fslhome/pjstanle/compute/reduction')
 from position_constraints import *
-sys.path.insert(0, '/home/flowlab/PJ/reduction/exact-gradients')
 from var_reduction_exact import *
 
 import grid_param_fortran
 
 nTurbines = 15
-locations = np.loadtxt('/home/flowlab/PJ/reduction/layout_amalia.txt')
+locations = np.loadtxt('/fslhome/pjstanle/compute/reduction/layout_amalia.txt')
 boundaryVertices, boundaryNormals = calculate_boundary(locations)
 
 bx = boundaryVertices[:,0]

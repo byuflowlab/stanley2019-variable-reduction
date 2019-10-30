@@ -3,292 +3,93 @@ from openmdao.api import Group, Component, Problem, IndepVarComp, pyOptSparseDri
 import numpy as np
 import scipy as sp
 import os
-from aep_calc import *
-from var_reduction_exact import *
 import grid_param_fortran
-import constraints
+import full_aep
+from var_reduction_exact import *
 import sys
-sys.path.insert(0, '/home/flowlab/PJ/reduction/')
 from windRoses import *
 from position_constraints import calculate_boundary
 sys.dont_write_bytecode = True
 
 
-class AEP_calc(Component):
-    """ Calculates aep with simple gaussian wake model """
-
-    def __init__(self, nTurbines, nDirections):
-
-        # print 'entering windframe __init__ - analytic'
-
-        super(AEP_calc, self).__init__()
-
-        self.nTurbines = nTurbines
-
-        # Explicitly size input arrays
-        self.add_param('turbineX', val=np.zeros(nTurbines))
-        self.add_param('turbineY', val=np.zeros(nTurbines))
-        self.add_param('turbineZ', val=np.zeros(nTurbines))
-        self.add_param('rotorDiameter', val=np.zeros(nTurbines))
-
-        self.add_param('windDirections', val=np.zeros(nDirections))
-        self.add_param('windSpeeds', val=np.zeros(nDirections))
-        self.add_param('windFrequencies', val=np.zeros(nDirections))
-
-
-        self.add_output('negAEP', val=0.0, pass_by_object=True)
-
-
-    def solve_nonlinear(self, params, unknowns, resids):
-
-        global nCalls_obj
-        nCalls_obj += 1
-
-        turbineX = params['turbineX']
-        turbineY = params['turbineY']
-        turbineZ = params['turbineZ']
-        rotorDiameter = params['rotorDiameter']
-
-        windDirections = params['windDirections']
-        windSpeeds = params['windSpeeds']
-        windFrequencies = params['windFrequencies']
-
-        AEP, daep_dx, daep_dy = fast_calc_gradients(turbineX, turbineY, turbineZ, rotorDiameter, windDirections,
-                    windSpeeds, windFrequencies)
-
-        self.daep_dx = daep_dx
-        self.daep_dy = daep_dy
-        unknowns['negAEP'] = -AEP
-
-    def linearize(self, params, unknowns, resids):
-
-        # initialize Jacobian dict
-        J = {}
-
-        d_dx = np.zeros((1,self.nTurbines))
-        d_dy = np.zeros((1,self.nTurbines))
-        for i in range(self.nTurbines):
-            d_dx[0][i] = -self.daep_dx[i]
-            d_dy[0][i] = -self.daep_dy[i]
-        # populate Jacobian dict
-        J[('negAEP', 'turbineX')] = d_dx
-        J[('negAEP', 'turbineY')] = d_dy
-
-        return J
-
-
-class constraint_calc(Component):
-    """ Calculates spacing and boundary constraints"""
-
-    def __init__(self, nTurbines, nBoundaries):
-
-        super(constraint_calc, self).__init__()
-
-        self.nTurbines = nTurbines
-        # Explicitly size input arrays
-        self.add_param('turbineX', val=np.zeros(nTurbines))
-        self.add_param('turbineY', val=np.zeros(nTurbines))
-        self.add_param('rotorDiameter', val=np.zeros(nTurbines))
-
-        self.add_param('boundaryVertices', val=np.zeros((nBoundaries,2)))
-        self.add_param('boundaryNormals', val=np.zeros((nBoundaries,2)))
-
-        self.add_output('spacing_constraint', val=np.zeros((nTurbines-1)*nTurbines/2), pass_by_object=True)
-        self.add_output('boundary_constraint', val=np.zeros(nTurbines), pass_by_object=True)
-
-
-    def solve_nonlinear(self, params, unknowns, resids):
-
-        global nCalls_con
-        nCalls_con += 1
-
-        turbineX = params['turbineX']
-        # turbineX = turbineX-(max(turbineX)+min(turbineX))/2.
-        turbineY = params['turbineY']
-        # turbienY = turbineY-(max(turbineY)+min(turbineY))/2.
-        rotorDiameter = params['rotorDiameter']
-
-        boundaryVertices = params['boundaryVertices']
-        # bx = params['boundaryVertices'][:,0]
-        # by = params['boundaryVertices'][:,1]
-        # bx = bx + (max(turbineX)+min(turbineX))/2.
-        # by = by + (max(turbineY)+min(turbineY))/2.
-        # boundaryVertices[:,0] = bx[:]
-        # boundaryVertices[:,1] = by[:]
-        boundaryNormals = params['boundaryNormals']
-
-
-        dx = np.eye(self.nTurbines)
-        dy = np.zeros((self.nTurbines,self.nTurbines))
-        _,ss_dx,_,bd_dx = constraints.constraints_position_dv(turbineX,dx,turbineY,dy,
-                                boundaryVertices,boundaryNormals)
-
-        dx = np.zeros((self.nTurbines,self.nTurbines))
-        dy = np.eye(self.nTurbines)
-        ss,ss_dy,bd,bd_dy = constraints.constraints_position_dv(turbineX,dx,turbineY,dy,
-                                boundaryVertices,boundaryNormals)
-
-        bounds = np.zeros(nTurbines)
-        index = np.zeros(nTurbines)
-        for i in range(nTurbines):
-            bounds[i] = np.min(bd[i])
-            index[i] = np.argmin(bd[i])
-
-        self.index = index
-        self.ss_dx = ss_dx
-        self.ss_dy = ss_dy
-        self.bd_dx = bd_dx
-        self.bd_dy = bd_dy
-
-        unknowns['spacing_constraint'] = ss-(2.*rotorDiameter[0])**2
-        unknowns['boundary_constraint'] = bounds
-
-    def linearize(self, params, unknowns, resids):
-
-        # initialize Jacobian dict
-        J = {}
-
-        # populate Jacobian dict
-        J[('spacing_constraint', 'turbineX')] = self.ss_dx.T
-        J[('spacing_constraint', 'turbineY')] = self.ss_dy.T
-
-        db_dx = np.zeros((self.nTurbines,self.nTurbines))
-        db_dy = np.zeros((self.nTurbines,self.nTurbines))
-        for i in range(nTurbines):
-            db_dx[i][i] = self.bd_dx[i][i][self.index[i]]
-            db_dy[i][i] = self.bd_dy[i][i][self.index[i]]
-        J[('boundary_constraint','turbineX')] = db_dx
-        J[('boundary_constraint','turbineY')] = db_dy
-
-        return J
-
-
-class form_grid(Component):
-    """get turbine locations from grid variables"""
-
-    def __init__(self, nTurbines, nRows):
-
-        super(form_grid, self).__init__()
-
-        self.nTurbines = nTurbines
-
-        # Explicitly size input arrays
-        self.add_param('dx', val=0.)
-        self.add_param('dy', val=0.)
-        self.add_param('shear', val=0.)
-        self.add_param('rotate', val=0.)
-        self.add_param('y0', val=0.)
-
-        self.add_param('turbs_per_row', val=np.zeros(nRows,dtype=int))
-        self.add_param('x_start', val=np.zeros(nRows))
-
-        self.add_output('turbineX', val=np.zeros(nTurbines), pass_by_object=True)
-        self.add_output('turbineY', val=np.zeros(nTurbines), pass_by_object=True)
-
-
-    def solve_nonlinear(self, params, unknowns, resids):
-
-        dx = params['dx']
-        dy = params['dy']
-        shear = params['shear']
-        rotate = params['rotate']
-        y0 = params['y0']
-        turbs_per_row = params['turbs_per_row']
-        x_start = params['x_start']
-
-        dxd = 1.
-        dyd = 0.
-        sheard = 0.
-        rotated = 0.
-        turbineX,dx_ddx,turbineY,dy_ddx = grid_param_fortran.makegrid_fortran_dv(nTurbines,
-                        dx,dxd,dy,dyd,shear,sheard,rotate,rotated,turbs_per_row,x_start,y0)
-
-        dxd = 0.
-        dyd = 1.
-        sheard = 0.
-        rotated = 0.
-        turbineX,dx_ddy,turbineY,dy_ddy = grid_param_fortran.makegrid_fortran_dv(nTurbines,
-                        dx,dxd,dy,dyd,shear,sheard,rotate,rotated,turbs_per_row,x_start,y0)
-
-        dxd = 0.
-        dyd = 0.
-        sheard = 1.
-        rotated = 0.
-        turbineX,dx_dshear,turbineY,dy_dshear = grid_param_fortran.makegrid_fortran_dv(nTurbines,
-                        dx,dxd,dy,dyd,shear,sheard,rotate,rotated,turbs_per_row,x_start,y0)
-
-        dxd = 0.
-        dyd = 0.
-        sheard = 0.
-        rotated = 1.
-        turbineX,dx_drotate,turbineY,dy_drotate = grid_param_fortran.makegrid_fortran_dv(nTurbines,
-                        dx,dxd,dy,dyd,shear,sheard,rotate,rotated,turbs_per_row,x_start,y0)
-
-        self.dx_ddx = dx_ddx
-        self.dy_ddx = dy_ddx
-        self.dx_ddy = dx_ddy
-        self.dy_ddy = dy_ddy
-        self.dx_dshear = dx_dshear
-        self.dy_dshear = dy_dshear
-        self.dx_drotate = dx_drotate
-        self.dy_drotate = dy_drotate
-
-        unknowns['turbineX'] = turbineX
-        unknowns['turbineY'] = turbineY
-
-    def linearize(self, params, unknowns, resids):
-
-        # initialize Jacobian dict
-        J = {}
-
-        # populate Jacobian dict
-        J[('turbineX', 'dx')] = self.dx_ddx.T
-        J[('turbineY', 'dx')] = self.dy_ddx.T
-
-        J[('turbineX', 'dy')] = self.dx_ddy.T
-        J[('turbineY', 'dy')] = self.dy_ddy.T
-
-        J[('turbineX', 'shear')] = self.dx_dshear.T
-        J[('turbineY', 'shear')] = self.dy_dshear.T
-
-        J[('turbineX', 'rotate')] = self.dx_drotate.T
-        J[('turbineY', 'rotate')] = self.dy_drotate.T
-
-
-        return J
+def sunflower_points(n, alpha=1.0):
+     # this function generates n points within a circle in a sunflower seed p    attern
+     # the code is based on the example found at
+     # https://stackoverflow.com/questions/28567166/uniformly-distribute-x-po    ints-inside-a-circle
+ 
+     def radius(k, n, b):
+         if (k + 1) > n - b:
+             r = 1. # put on the boundary
+         else:
+             r = np.sqrt((k + 1.) - 1. / 2.) / np.sqrt(n - (b + 1.) / 2.)  #     apply squareroot
+ 
+         return r
+ 
+     x = np.zeros(n)
+     y = np.zeros(n)
+ 
+     b = np.round(alpha * np.sqrt(n)) # number of boundary points
+ 
+     phi = (np.sqrt(5.) + 1.) / 2.  # golden ratio
+ 
+     for k in np.arange(0, n):
+ 
+         r = radius(k, n, b)
+ 
+         theta = 2. * np.pi * (k+1) / phi**2
+ 
+         x[k] = r * np.cos(theta)
+         y[k] = r * np.sin(theta)
+ 
+     return x, y
 
 
 if __name__ == "__main__":
-    global nCalls_obj
-    global nCalls_con
-
-    run = 4
     nTurbines = 100
-    rose = 'northIslandRose'
+    # rose = 'northIslandRose'
     # rose = 'ukiahRose'
     # rose = 'victorvilleRose'
-    spacing = 8.
-    boundary = 'amalia'
+    # spacing = 4.
+    # spacing = 6.
+    # spacing = 8.
+    # boundary = 'amalia'
     # boundary = 'circle'
     # boundary = 'square'
 
-    nDirections = 23
+    spacing = float(sys.argv[1])
+    boundary = '%s'%sys.argv[2]
+    rose = '%s'%sys.argv[3]
+
+    print 'spacing: ', spacing
+    print 'boundary: ', boundary
+    print 'rose: ', rose
+
+    nDirections = 24
     nSpeeds = 5
     if rose == 'northIslandRose':
         windDirections, windFrequencies, windSpeeds = northIslandRose(nDirections)
         wind_angle = windDirections[np.argmax(windFrequencies*windSpeeds**3)]
         windDirections, windFrequencies, windSpeeds = northIslandRose(nDirections,nSpeeds=nSpeeds)
         windDirections -= wind_angle
+
+        windDirections_eval, windFrequencies_eval, windSpeeds_eval = northIslandRose(360,nSpeeds=50)
+        windDirections_eval -= wind_angle
     elif rose == 'ukiahRose':
         windDirections, windFrequencies, windSpeeds = ukiahRose(nDirections)
         wind_angle = windDirections[np.argmax(windFrequencies*windSpeeds**3)]
         windDirections, windFrequencies, windSpeeds = ukiahRose(nDirections,nSpeeds=nSpeeds)
         windDirections -= wind_angle
+
+        windDirections_eval, windFrequencies_eval, windSpeeds_eval = ukiahRose(360,nSpeeds=50)
+        windDirections_eval -= wind_angle
     elif rose == 'victorvilleRose':
         windDirections, windFrequencies, windSpeeds = victorvilleRose(nDirections)
         wind_angle = windDirections[np.argmax(windFrequencies*windSpeeds**3)]
         windDirections, windFrequencies, windSpeeds = victorvilleRose(nDirections,nSpeeds=nSpeeds)
         windDirections -= wind_angle
+
+        windDirections_eval, windFrequencies_eval, windSpeeds_eval = victorvilleRose(360,nSpeeds=50)
+        windDirections_eval -= wind_angle
 
     rotorDiameter = np.ones(nTurbines)*130.
     turbineZ = np.ones(nTurbines)*110.
@@ -324,8 +125,8 @@ if __name__ == "__main__":
         locations[:, 1] = yBounds
         boundaryVertices, boundaryNormals = calculate_boundary(locations)
     elif boundary == 'amalia':
-        locations = np.loadtxt('/Users/ningrsrch/Dropbox/Projects/reduction/layout_amalia.txt')
-        xBounds = locations[:, 0]
+        locations = np.loadtxt('/fslhome/pjstanle/compute/reduction/layout_amalia.txt')
+	xBounds = locations[:, 0]
         yBounds = locations[:, 1]
         xBounds = xBounds - min(xBounds) - (max(xBounds)-min(xBounds))/2.
         yBounds = yBounds - min(yBounds) - (max(yBounds)-min(yBounds))/2.
@@ -367,73 +168,91 @@ if __name__ == "__main__":
         ymax = max(yBounds)
         ymin = min(yBounds)
 
-    num = 1
-    for i in range(num):
-        rotate = 0.
-        dx_start,dy_start,shear_start,rotate_start,turbs_per_row,x_start,y0 = startGrid(nTurbines,
+    ct_speeds = np.array([ 0.000001, 0.1       ,  0.60816327,  1.11632653,  1.6244898 ,  2.13265306,
+           2.64081633,  3.14897959,  3.65714286,  4.16530612,  4.67346939,
+           5.18163265,  5.68979592,  6.19795918,  6.70612245,  7.21428571,
+           7.72244898,  8.23061224,  8.73877551,  9.24693878,  9.75510204,
+          10.26326531, 10.77142857, 11.27959184, 11.7877551 , 12.29591837,
+          12.80408163, 13.3122449 , 13.82040816, 14.32857143, 14.83673469,
+          15.34489796, 15.85306122, 16.36122449, 16.86938776, 17.37755102,
+          17.88571429, 18.39387755, 18.90204082, 19.41020408, 19.91836735,
+          20.42653061, 20.93469388, 21.44285714, 21.95102041, 22.45918367,
+          22.96734694, 23.4755102 , 23.98367347, 24.49183673, 25.        ])
+    ct_ct = np.array([0.74988552, 0.74988552, 0.74988552, 0.74988552, 0.74988552, 0.74988552,
+          0.74988552, 0.74945275, 0.74736838, 0.74578062, 0.74452166,
+          0.7432327 , 0.74240891, 0.74171844, 0.74113119, 0.74062551,
+          0.7401854 , 0.7397988 , 0.73945643, 0.73915104, 0.71535516,
+          0.50902345, 0.42264255, 0.36002829, 0.31616439, 0.27728908,
+          0.2449473 , 0.2179915 , 0.19464155, 0.17388996, 0.15676952,
+          0.14116089, 0.12769325, 0.11564223, 0.104593  , 0.09546578,
+          0.08765315, 0.08043937, 0.07409357, 0.06822311, 0.06322334,
+          0.05887784, 0.05481244, 0.05114998, 0.0474271 , 0.04415572,
+          0.04104199, 0.0383636 , 0.03582949, 0.03401271, 0.03235028])
+
+    nCtPoints = len(ct_ct)
+    RotorPointsYopt = np.array([0, 0, -0.69, 0.69])
+    RotorPointsZopt = np.array([0.69, -0.69, 0, 0])
+    nRotorPoints_opt = 4
+
+    nRotorPoints_eval = 100
+    RotorPointsYeval, RotorPointsZeval = sunflower_points(nRotorPoints_eval)
+
+
+    rotate = 0.
+    dx,dy,shear,rotate,turbs_per_row,x_start,y0 = startGrid(nTurbines,
                             boundaryVertices,boundaryNormals,rotate=rotate,my=1.0)
+    turbineX,_,turbineY,_ = grid_param_fortran.makegrid_fortran_dv(nTurbines,
+                         dx,0.,dy,0.,shear,0.,rotate,0.,turbs_per_row,x_start,y0)
+    nRows = len(turbs_per_row)
 
-        nRows = len(turbs_per_row)
-        prob = Problem()
-        root = prob.root = Group()
-        root.add('dx', IndepVarComp('dx', 0.), promotes=['*'])
-        root.add('dy', IndepVarComp('dy', 0.), promotes=['*'])
-        root.add('shear', IndepVarComp('shear', 0.), promotes=['*'])
-        root.add('rotate', IndepVarComp('rotate', 0.), promotes=['*'])
+    print 'dx: ', dx
+    print 'dy: ', dy
+    print 'shear: ', shear
+    print 'rotate: ', rotate
+    print 'turbs_per_row: ', turbs_per_row
+    print 'x_start: ', x_start
+    print 'y0: ', y0
+    print 'turbineX: ', turbineX
+    print 'turbineY: ', turbineY
+    
+    """evaluate"""
 
-        root.add('makeGrid', form_grid(nTurbines=nTurbines,nRows=nRows),promotes=['*'])
-        root.add('AEP_obj', AEP_calc(nTurbines=nTurbines, nDirections=nDirections*nSpeeds), promotes=['*'])
-        root.add('position_constraints', constraint_calc(nTurbines=nTurbines, nBoundaries=nBoundaries),promotes=['*'])
+    Ct = np.ones(nTurbines)*8./9.
+    yaw = np.zeros(nTurbines)
+    shear_exp = 0.1
+    rated_ws = 9.8
+    rated_power = 3.6
+    cut_in_speed = 4.0
+    cut_out_speed = 25.
+    zref = 50.
+    z0 = 0.
+    ky = 0.022
+    kz = 0.022
+    alpha = 2.32
+    beta = 0.154
+    TI = 0.11
+    relaxationFactor = 1.0
+    sm_smoothing = 700.
+    generator_efficiency = 0.936
+    wake_combination_method = 1
+    ti_calculation_method = 2
+    wake_model_version = 2016
+    interp_type = 1
+    calc_k_star = True
+    print_ti = False
+    use_ct_curve = True
 
-        prob.setup(check=True)
+    print 'windDirections: ', windDirections
+    print 'windSpeeds: ', windSpeeds
+    print 'windFrequencies: ', np.sum(windFrequencies)
+    print 'RotorPointsYopt: ', RotorPointsYopt
+    print 'RotorPointsZopt: ', RotorPointsZopt
+    AEPopt = full_aep.calcaep(turbineX,turbineY,turbineZ,rotorDiameter,Ct,yaw,windDirections,
+                        windSpeeds,windFrequencies,shear_exp,rated_ws,rated_power,
+                        cut_in_speed,cut_out_speed,zref,z0,ky,kz,alpha,beta,TI,
+                        relaxationFactor,RotorPointsYopt, RotorPointsZopt,ct_speeds,ct_ct,
+                        sm_smoothing,wake_combination_method,ti_calculation_method,wake_model_version,
+                        interp_type,calc_k_star,print_ti,use_ct_curve)
 
-        prob['turbineZ'] = turbineZ
-        prob['rotorDiameter'] = rotorDiameter
-
-        prob['windDirections'] = windDirections
-        prob['windSpeeds'] = windSpeeds
-        prob['windFrequencies'] = windFrequencies
-
-        prob['boundaryVertices'] = boundaryVertices
-        prob['boundaryNormals'] = boundaryNormals
-
-        prob['turbs_per_row'] = turbs_per_row
-        prob['x_start'] = x_start
-        prob['y0'] = y0
-
-        print 'iteration: ', i
-        nCalls_obj = 0
-        nCalls_con = 0
-
-        prob['dx'] = dx_start
-        prob['dy'] = dy_start
-        prob['shear'] = shear_start
-        prob['rotate'] = rotate_start
-
-        prob.run()
-
-        separation = np.min(prob['spacing_constraint'])
-        boundary = np.min(prob['boundary_constraint'])
-        AEP = -prob['negAEP']
-
-        print 'AEP opt: ', AEP
-        print 'function calls obj: ', nCalls_obj
-        print 'function calls con: ', nCalls_con
-        print 'boundary constraint: ', boundary
-        print 'separation constraint: ', separation
-
-        print 'turbineX: ', repr(prob['turbineX'])
-        print 'turbineY: ', repr(prob['turbineY'])
-
-        plt.figure(1)
-        plt.clf()
-        for i in range(nTurbines):
-            circ = plt.Circle((prob['turbineX'][i],prob['turbineY'][i]),prob['rotorDiameter'][i]/2.)
-            plt.gca().add_patch(circ)
-        bx = prob['boundaryVertices'][:,0]
-        by = prob['boundaryVertices'][:,1]
-        bx = np.append(bx,bx[0])
-        by = np.append(by,by[0])
-        plt.plot(bx,by,'--k')
-        plt.axis('equal')
-        plt.show()
+    AEPopt = AEPopt*0.936
+    print 'AEPopt: ', AEPopt

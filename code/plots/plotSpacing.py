@@ -328,5 +328,5 @@ ax1.text(-2800.,2800.,'A',fontsize=14,weight='bold',color='black')
 ax2.text(-3900.,3900.,'B',fontsize=14,weight='bold',color='black')
 ax3.text(-5000.,5000.,'C',fontsize=14,weight='bold',color='black')
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/spacing.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/spacing.pdf',transparent=True)
 plt.show()

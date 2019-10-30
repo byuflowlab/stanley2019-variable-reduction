@@ -2,6 +2,7 @@ import numpy as np
 from akima import Akima, akima_interp
 from math import radians
 import sys
+import scipy.special as spec
 sys.dont_write_bytecode = True
 
 
@@ -464,7 +465,7 @@ def setup_weibull(windDirections,windFrequencies,windSpeeds,nSpeeds):
     dirs = np.zeros(nDirections*nSpeeds)
     freqs = np.zeros(nDirections*nSpeeds)
     speeds = np.zeros(nDirections*nSpeeds)
-
+    print np.shape(speeds)
     #direction loops
     for i in range(nDirections):
         for j in range(nSpeeds):
@@ -479,7 +480,11 @@ def setup_weibull(windDirections,windFrequencies,windSpeeds,nSpeeds):
         num_int = 1000
         for j in range(nSpeeds):
             speed_int = np.linspace(speed_dist[j]-dspeed/2.,speed_dist[j]+dspeed/2.,num_int)
-            freq_int = Weibull(speed_int,avg_speed)
+
+            k = 2.0
+            scale = avg_speed/(spec.gamma(1.0+1./k))
+
+            freq_int = Weibull(speed_int,scale)
             speed_freq = np.trapz(freq_int,speed_int)
             speeds[i*nSpeeds+j] = speed_dist[j]
             freqs[i*nSpeeds+j] = speed_freq*windFrequencies[i]
@@ -499,7 +504,7 @@ def process_rose_data(windSpeeds,windDirections,windFrequencies,nDirections,nSpe
     frequencies = np.zeros(num)
     speeds = np.zeros(num)
 
-    num_int = 1000
+    num_int = 100
 
     dir_int1 = np.linspace(dirs[0],dirs[0]+ddir/2.,num_int/2)
     freq_int1 = np.zeros(num_int/2)
@@ -758,4 +763,4 @@ if __name__=="__main__":
     #
     #
     #
-    plt.show()
+    # plt.show()

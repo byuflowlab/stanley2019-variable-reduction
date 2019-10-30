@@ -641,5 +641,5 @@ ax5.tick_params(axis='both', which='minor', labelsize=8)
 ax6.tick_params(axis='both', which='major', labelsize=8)
 ax6.tick_params(axis='both', which='minor', labelsize=8)
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_spacing.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_spacing.pdf',transparent=True)
 plt.show()

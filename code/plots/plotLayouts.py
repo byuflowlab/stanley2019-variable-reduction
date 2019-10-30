@@ -26,16 +26,17 @@ side_length = (np.sqrt(nTurbs)-1.)*rotorDiameter[0]*spacing
 a = side_length**2
 circle_radius = np.sqrt(a/np.pi)
 
-
+print '1'
 
 """amalia boundary"""
-locations = np.loadtxt('/Users/ningrsrch/Dropbox/Projects/reduction/layout_amalia.txt')
+locations = np.loadtxt('/Users/ningrsrch/Dropbox/Projects/stanley2019-variable-reduction/code/plots/layout_amalia.txt')
 xBounds = locations[:, 0]
 yBounds = locations[:, 1]
 xBounds = xBounds - min(xBounds) - (max(xBounds)-min(xBounds))/2.
 yBounds = yBounds - min(yBounds) - (max(yBounds)-min(yBounds))/2.
 locations[:, 0] = xBounds
 locations[:, 1] = yBounds
+print '2'
 boundaryVertices, boundaryNormals = calculate_boundary(locations)
 xBounds = boundaryVertices[:, 0]
 yBounds = boundaryVertices[:, 1]
@@ -44,6 +45,8 @@ nBounds = len(xBounds)
 points = np.zeros((nBounds,2))
 points[:, 0] = xBounds
 points[:, 1] = yBounds
+
+print '2'
 
 hull = sp.spatial.ConvexHull(points)
 area = hull.volume
@@ -527,5 +530,5 @@ ax5.text(-500.,-4000.,'f',fontsize=10,color='black')
 
 
 # plt.tight_layout()
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/layout-variable.pdf')
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/layout-variable.pdf')
 plt.show()

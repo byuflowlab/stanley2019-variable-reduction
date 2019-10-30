@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.dont_write_bytecode = True
-sys.path.insert(1, '/home/flowlab/PJ/reduction/exact-gradients')
+sys.path.insert(1, '/fslhome/pjstanle/compute/reduction')
 from aep_calc import *
 import time
 

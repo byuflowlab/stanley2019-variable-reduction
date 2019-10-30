@@ -8,20 +8,6 @@ from windRoses import *
 import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 
-
-"""colors"""
-robin = '#55dfe6'
-nectar = '#e3bf54'
-tuscan = '#e37854'
-royal = '#a054e3'
-
-robin = 'C0'
-nectar = 'C1'
-tuscan = 'C1'
-royal = 'C3'
-
-# robin = '#ACBD78'
-
 nTurbs = 100
 rotorDiameter = np.ones(nTurbs)*130.
 
@@ -169,7 +155,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax7.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5)
+bars = ax7.bar(wd, wf, width=width, bottom=bottom, color='C3',alpha=0.5)
 thetaticks = np.arange(0,360,45)
 ax7.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=8)
 ax7.set_thetagrids(thetaticks, frac=1.2)
@@ -178,7 +164,7 @@ ax7.set_yticklabels(['0.04','0.08'],horizontalalignment='center',fontsize=8)
 ax7.set_ylim(0.,0.1)
 
 # max_height = max(ws)
-# bars = ax10.bar(wd, ws, width=width, bottom=bottom, color=tuscan,alpha=0.5)
+# bars = ax10.bar(wd, ws, width=width, bottom=bottom, color='C1',alpha=0.5)
 # ax10.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=9)
 # ax10.set_thetagrids(thetaticks, frac=1.2)
 # ax10.set_rgrids([5,10], angle=-35.)
@@ -193,7 +179,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax8.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5)
+bars = ax8.bar(wd, wf, width=width, bottom=bottom, color='C3',alpha=0.5)
 thetaticks = np.arange(0,360,45)
 ax8.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=8)
 ax8.set_thetagrids(thetaticks, frac=1.2)
@@ -202,7 +188,7 @@ ax8.set_yticklabels(['0.04','0.08'],horizontalalignment='center',fontsize=8)
 ax8.set_ylim(0.,0.1)
 
 # max_height = max(ws)
-# bars = ax11.bar(wd, ws, width=width, bottom=bottom, color=tuscan,alpha=0.5)
+# bars = ax11.bar(wd, ws, width=width, bottom=bottom, color='C1',alpha=0.5)
 # ax11.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=9)
 # ax11.set_thetagrids(thetaticks, frac=1.2)
 # ax11.set_rgrids([5,10], angle=-35.)
@@ -218,7 +204,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax9.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5)
+bars = ax9.bar(wd, wf, width=width, bottom=bottom, color='C3',alpha=0.5)
 # ax9.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=9)
 
 # tick locations
@@ -230,7 +216,7 @@ ax9.set_yticklabels(['0.04','0.08'],horizontalalignment='center',fontsize=8)
 ax9.set_ylim(0.,0.1)
 
 # max_height = max(ws)
-# bars = ax12.bar(wd, ws, width=width, bottom=bottom, color=tuscan,alpha=0.5)
+# bars = ax12.bar(wd, ws, width=width, bottom=bottom, color='C1',alpha=0.5)
 # ax12.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=9)
 # ax12.set_thetagrids(thetaticks, frac=1.2)
 # ax12.set_rgrids([5,10], angle=-35.)
@@ -280,21 +266,21 @@ b8 = np.logspace(np.log10(min8),np.log10(max8),25)
 
 num = 100
 
-ax1.hist(f_grid4[0:num],bins=b4,color=tuscan,alpha=0.5)
-ax2.hist(f_grid6[0:num],bins=b6,color=tuscan,alpha=0.5)
-ax3.hist(f_grid8[0:num],bins=b8,color=tuscan,alpha=0.5)
+ax1.hist(f_grid4[0:num],bins=b4,color='C1',alpha=0.5)
+ax2.hist(f_grid6[0:num],bins=b6,color='C1',alpha=0.5)
+ax3.hist(f_grid8[0:num],bins=b8,color='C1',alpha=0.5)
 
-ax1.hist(f_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax2.hist(f_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax3.hist(f_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax1.hist(f_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax2.hist(f_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax3.hist(f_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
-ax1.hist(f_direct4[0:num],bins=b4,color=royal,alpha=0.5)
-ax2.hist(f_direct6[0:num],bins=b6,color=royal,alpha=0.5)
-ax3.hist(f_direct8[0:num],bins=b8,color=royal,alpha=0.5)
+ax1.hist(f_direct4[0:num],bins=b4,color='C3',alpha=0.5)
+ax2.hist(f_direct6[0:num],bins=b6,color='C3',alpha=0.5)
+ax3.hist(f_direct8[0:num],bins=b8,color='C3',alpha=0.5)
 
-ax1.hist(f_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax2.hist(f_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax3.hist(f_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax1.hist(f_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax2.hist(f_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax3.hist(f_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
 min4 = np.min(np.array([np.min(AEP_param4),np.min(AEP_direct4),np.min(AEP_grid4)]))
 min6 = np.min(np.array([np.min(AEP_param6),np.min(AEP_direct6),np.min(AEP_grid6)]))
@@ -324,18 +310,18 @@ b8 = np.linspace(min8,max8,25)
 # b8 = np.linspace(0.9,1.05,25)
 
 
-ax4.hist(AEP_grid4[0:num],bins=b4,color=tuscan,alpha=0.5,label='grid')
-ax5.hist(AEP_grid6[0:num],bins=b6,color=tuscan,alpha=0.5)
-ax6.hist(AEP_grid8[0:num],bins=b8,color=tuscan,alpha=0.5)
-ax4.hist(AEP_param4[0:num],bins=b4,color=robin,alpha=0.5,label='parameterized')
-ax5.hist(AEP_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax6.hist(AEP_param8[0:num],bins=b8,color=robin,alpha=0.5)
-ax4.hist(AEP_direct4[0:num],bins=b4,color=royal,alpha=0.5,label='direct')
-ax5.hist(AEP_direct6[0:num],bins=b6,color=royal,alpha=0.5)
-ax6.hist(AEP_direct8[0:num],bins=b8,color=royal,alpha=0.5)
-ax4.hist(AEP_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax5.hist(AEP_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax6.hist(AEP_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax4.hist(AEP_grid4[0:num],bins=b4,color='C1',alpha=0.5,label='grid')
+ax5.hist(AEP_grid6[0:num],bins=b6,color='C1',alpha=0.5)
+ax6.hist(AEP_grid8[0:num],bins=b8,color='C1',alpha=0.5)
+ax4.hist(AEP_param4[0:num],bins=b4,color='C0',alpha=0.5,label='parameterized')
+ax5.hist(AEP_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax6.hist(AEP_param8[0:num],bins=b8,color='C0',alpha=0.5)
+ax4.hist(AEP_direct4[0:num],bins=b4,color='C3',alpha=0.5,label='direct')
+ax5.hist(AEP_direct6[0:num],bins=b6,color='C3',alpha=0.5)
+ax6.hist(AEP_direct8[0:num],bins=b8,color='C3',alpha=0.5)
+ax4.hist(AEP_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax5.hist(AEP_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax6.hist(AEP_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
 ax4.legend(loc=2,prop={'size': 8})
 
@@ -430,5 +416,5 @@ ax5.tick_params(axis='both', which='minor', labelsize=8)
 ax6.tick_params(axis='both', which='major', labelsize=8)
 ax6.tick_params(axis='both', which='minor', labelsize=8)
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_roses.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_roses.pdf',transparent=True)
 plt.show()

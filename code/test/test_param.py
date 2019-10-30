@@ -5,9 +5,8 @@ sys.dont_write_bytecode = True
 import time
 import sys
 import param_fortran
-sys.path.insert(1, '/home/flowlab/PJ/reduction')
+sys.path.insert(1, '/fslhome/pjstanle/compute/reduction')
 from position_constraints import *
-sys.path.insert(0, '/home/flowlab/PJ/reduction/exact-gradients')
 from var_reduction_exact import *
 import matplotlib.pyplot as plt
 

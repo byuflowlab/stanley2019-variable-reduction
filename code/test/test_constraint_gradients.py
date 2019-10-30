@@ -4,8 +4,7 @@ import sys
 sys.dont_write_bytecode = True
 import time
 import sys
-sys.path.insert(0, '/home/flowlab/PJ/reduction')
-sys.path.insert(0, '/home/flowlab/PJ/reduction/exact-gradients')
+sys.path.insert(0, '/fslhome/pjstanle/compute/reduction')
 from position_constraints import *
 
 nTurbines = 5

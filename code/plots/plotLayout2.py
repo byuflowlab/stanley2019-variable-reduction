@@ -400,5 +400,5 @@ ax3.text(-500.,-3600.,'direct',fontsize=8)
 plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0,
             hspace = 0, wspace = 0)
 # plt.tight_layout()
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/opt-cases.pdf')
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/opt-cases.pdf')
 plt.show()

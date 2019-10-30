@@ -7,7 +7,7 @@ import grid_param_fortran
 warnings.simplefilter('ignore', np.RankWarning)
 import sys
 import grid_param_fortran
-sys.path.insert(0, '/Users/ningrsrch/Dropbox/Projects/reduction/')
+sys.path.insert(0, '/home/flowlab/PJ/reduction')
 from position_constraints import *
 sys.dont_write_bytecode = True
 
@@ -67,15 +67,12 @@ def startGrid(nTurbines,boundaryVertices,boundaryNormals,rotate=0.,my=1.):
 
     converged = False
     step = 0.25
-    #
     print 'setting up base grid'
     # print nTurbines
     while converged == False:
         while num_inside < nTurbines:
-            num_inside
             num_inside,d = startLoop(N,d,my,step,-1.,rotate,turbs_per_row,x_start,y0,boundaryVertices,boundaryNormals,t)
         while num_inside >= nTurbines:
-            num_inside
             num_inside,d = startLoop(N,d,my,step,1.,rotate,turbs_per_row,x_start,y0,boundaryVertices,boundaryNormals,t)
 
         if step < 1.E-8:

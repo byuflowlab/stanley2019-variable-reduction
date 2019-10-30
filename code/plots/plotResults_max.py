@@ -224,5 +224,5 @@ ax2.text(2.,-3.,'wind rose',fontsize=8,horizontalalignment='center')
 ax3.text(2.,-3.,'boundary shape',fontsize=8,horizontalalignment='center')
 
 #
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_max.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/stanley2019-variable-reduction/paper/paper-figures/results_max.pdf',transparent=True)
 plt.show()

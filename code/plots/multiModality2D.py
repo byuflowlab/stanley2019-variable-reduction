@@ -3103,6 +3103,6 @@ if __name__ == "__main__":
     plt.colorbar(m)
 
 
-    plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/mm2.pdf',transparent=True)
+    # plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/mm2.pdf',transparent=True)
 
     plt.show()

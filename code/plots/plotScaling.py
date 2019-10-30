@@ -89,5 +89,5 @@ plt.minorticks_off()
 plt.subplots_adjust(top = 0.94, bottom = 0.2, right = 0.98, left = 0.25,
             hspace = 0.6, wspace = 0.2)
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/scaling.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/scaling.pdf',transparent=True)
 plt.show()

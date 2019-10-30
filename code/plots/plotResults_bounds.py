@@ -8,19 +8,6 @@ import scipy as sp
 from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from windRoses import *
 
-"""colors"""
-robin = '#B2DBD5'
-nectar = '#EAB364'
-tuscan = '#B2473E'
-olive = '#ACBD78'
-
-robin = 'C0'
-nectar = 'C1'
-tuscan = 'C1'
-royal = 'C3'
-
-# robin = '#ACBD78'
-
 nTurbs = 100
 rotorDiameter = np.ones(nTurbs)*130.
 
@@ -185,7 +172,7 @@ yBounds = yBounds/np.sqrt(area_ratio)
 xBounds = np.append(xBounds,xBounds[0])
 yBounds = np.append(yBounds,yBounds[0])
 
-ax7.plot(xBounds,yBounds,'-',color=robin,alpha=0.5)
+ax7.plot(xBounds,yBounds,'-',color='C0',alpha=0.5)
 
 
 """circle boundary"""
@@ -207,7 +194,7 @@ yBounds = x*np.sin(np.deg2rad(wind_angle)) + y*np.cos(np.deg2rad(wind_angle))
 xBounds = np.append(xBounds,xBounds[0])
 yBounds = np.append(yBounds,yBounds[0])
 
-ax8.plot(xBounds,yBounds,'-',color=robin,alpha=0.5)
+ax8.plot(xBounds,yBounds,'-',color='C0',alpha=0.5)
 
 
 """square boundary rotated 30 deg from dominant wind direction"""
@@ -220,7 +207,7 @@ yBounds = x*np.sin(np.deg2rad(30.)) + y*np.cos(np.deg2rad(30.))
 xBounds = np.append(xBounds,xBounds[0])
 yBounds = np.append(yBounds,yBounds[0])
 
-ax9.plot(xBounds,yBounds,'-',color=robin,alpha=0.5)
+ax9.plot(xBounds,yBounds,'-',color='C0',alpha=0.5)
 
 ax7.set_ylim(-3300.,3300.)
 ax8.set_ylim(-3300.,3300.)
@@ -270,21 +257,21 @@ b8 = np.logspace(np.log10(min8),np.log10(max8),25)
 
 num = 100
 
-ax1.hist(f_grid4[0:num],bins=b4,color=tuscan,alpha=0.5)
-ax2.hist(f_grid6[0:num],bins=b6,color=tuscan,alpha=0.5)
-ax3.hist(f_grid8[0:num],bins=b8,color=tuscan,alpha=0.5)
+ax1.hist(f_grid4[0:num],bins=b4,color='C1',alpha=0.5)
+ax2.hist(f_grid6[0:num],bins=b6,color='C1',alpha=0.5)
+ax3.hist(f_grid8[0:num],bins=b8,color='C1',alpha=0.5)
 
-ax1.hist(f_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax2.hist(f_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax3.hist(f_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax1.hist(f_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax2.hist(f_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax3.hist(f_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
-ax1.hist(f_direct4[0:num],bins=b4,color=royal,alpha=0.5)
-ax2.hist(f_direct6[0:num],bins=b6,color=royal,alpha=0.5)
-ax3.hist(f_direct8[0:num],bins=b8,color=royal,alpha=0.5)
+ax1.hist(f_direct4[0:num],bins=b4,color='C2',alpha=0.5)
+ax2.hist(f_direct6[0:num],bins=b6,color='C2',alpha=0.5)
+ax3.hist(f_direct8[0:num],bins=b8,color='C2',alpha=0.5)
 
-ax1.hist(f_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax2.hist(f_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax3.hist(f_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax1.hist(f_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax2.hist(f_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax3.hist(f_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
 min4 = np.min(np.array([np.min(AEP_param4),np.min(AEP_direct4),np.min(AEP_grid4)]))
 min6 = np.min(np.array([np.min(AEP_param6),np.min(AEP_direct6),np.min(AEP_grid6)]))
@@ -302,18 +289,18 @@ b6 = np.linspace(min4,max4,25)
 b8 = np.linspace(min4,max4,25)
 
 
-ax4.hist(AEP_grid4[0:num],bins=b4,color=tuscan,alpha=0.5,label='grid')
-ax5.hist(AEP_grid6[0:num],bins=b6,color=tuscan,alpha=0.5)
-ax6.hist(AEP_grid8[0:num],bins=b8,color=tuscan,alpha=0.5)
-ax4.hist(AEP_param4[0:num],bins=b4,color=robin,alpha=0.5,label='parameterized')
-ax5.hist(AEP_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax6.hist(AEP_param8[0:num],bins=b8,color=robin,alpha=0.5)
-ax4.hist(AEP_direct4[0:num],bins=b4,color=royal,alpha=0.5,label='direct')
-ax5.hist(AEP_direct6[0:num],bins=b6,color=royal,alpha=0.5)
-ax6.hist(AEP_direct8[0:num],bins=b8,color=royal,alpha=0.5)
-ax4.hist(AEP_param4[0:num],bins=b4,color=robin,alpha=0.5)
-ax5.hist(AEP_param6[0:num],bins=b6,color=robin,alpha=0.5)
-ax6.hist(AEP_param8[0:num],bins=b8,color=robin,alpha=0.5)
+ax4.hist(AEP_grid4[0:num],bins=b4,color='C1',alpha=0.5,label='grid')
+ax5.hist(AEP_grid6[0:num],bins=b6,color='C1',alpha=0.5)
+ax6.hist(AEP_grid8[0:num],bins=b8,color='C1',alpha=0.5)
+ax4.hist(AEP_param4[0:num],bins=b4,color='C0',alpha=0.5,label='parameterized')
+ax5.hist(AEP_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax6.hist(AEP_param8[0:num],bins=b8,color='C0',alpha=0.5)
+ax4.hist(AEP_direct4[0:num],bins=b4,color='C2',alpha=0.5,label='direct')
+ax5.hist(AEP_direct6[0:num],bins=b6,color='C2',alpha=0.5)
+ax6.hist(AEP_direct8[0:num],bins=b8,color='C2',alpha=0.5)
+ax4.hist(AEP_param4[0:num],bins=b4,color='C0',alpha=0.5)
+ax5.hist(AEP_param6[0:num],bins=b6,color='C0',alpha=0.5)
+ax6.hist(AEP_param8[0:num],bins=b8,color='C0',alpha=0.5)
 
 ax4.legend(loc=2,prop={'size': 8})
 
@@ -410,5 +397,5 @@ ax5.tick_params(axis='both', which='minor', labelsize=8)
 ax6.tick_params(axis='both', which='major', labelsize=8)
 ax6.tick_params(axis='both', which='minor', labelsize=8)
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_bounds.pdf',transparent=True)
+# plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/results_bounds.pdf',transparent=True)
 plt.show()

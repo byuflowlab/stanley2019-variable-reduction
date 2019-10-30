@@ -33,7 +33,7 @@ ax6 = plt.subplot2grid((2, 3), (1, 2),projection='polar')
 
 
 
-nDirections = 23
+nDirections = 24
 bottom = 0
 width = (2.*np.pi) / float(nDirections)
 
@@ -45,7 +45,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax1.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5, edgecolor='white', linewidth=0.5)
+bars = ax1.bar(wd, wf, width=width, bottom=bottom, color='C2',alpha=0.5, edgecolor='white', linewidth=0.5)
 thetaticks = np.arange(0,360,45)
 ax1.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=8)
 ax1.set_thetagrids(thetaticks, frac=1.2)
@@ -72,7 +72,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax2.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5, edgecolor='white', linewidth=0.5)
+bars = ax2.bar(wd, wf, width=width, bottom=bottom, color='C2',alpha=0.5, edgecolor='white', linewidth=0.5)
 thetaticks = np.arange(0,360,45)
 ax2.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=8)
 ax2.set_thetagrids(thetaticks, frac=1.2)
@@ -99,7 +99,7 @@ for i in range(nDirections):
    wd[i] = radians(wd[i])*-1.
 """wind rose"""
 max_height = max(wf)
-bars = ax3.bar(wd, wf, width=width, bottom=bottom, color=royal,alpha=0.5, edgecolor='white', linewidth=0.5)
+bars = ax3.bar(wd, wf, width=width, bottom=bottom, color='C2',alpha=0.5, edgecolor='white', linewidth=0.5)
 # ax9.set_xticklabels(['E', 'NE', 'N', 'NW', 'W', 'SW', 'S', 'SE'],fontsize=10)
 
 # tick locations
@@ -127,12 +127,12 @@ ax6.set_xlabel('Victorville',fontsize=8)
 ax1.set_ylabel('wind roses',fontsize=8,labelpad=20)
 ax4.set_ylabel('wind speeds',fontsize=8,labelpad=20)
 
-plt.subplots_adjust(top = 1.0, bottom = 0.1, right = 0.99, left = 0.1,
-            hspace = 0., wspace = 0.35)
+plt.subplots_adjust(top = 0.96, bottom = 0.1, right = 0.99, left = 0.1,
+            hspace = 0.2, wspace = 0.35)
 
 ax1.text(0.76*np.pi,0.2,'a',fontsize=11,color='black')
 ax2.text(0.76*np.pi,0.2,'b',fontsize=11,color='black')
 ax3.text(0.76*np.pi,0.2,'c',fontsize=11,color='black')
 
-plt.savefig('/Users/ningrsrch/Dropbox/Projects/reduction/paper/paper-figures/roses.pdf',transparent=True)
+# plt.savefig('roses.pdf',transparent=True)
 plt.show()
