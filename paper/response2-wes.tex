@@ -1,0 +1,329 @@
+\documentclass[12pt]{report}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\setlength\parindent{0pt}
+
+\title{Response to Reviewer 2}
+
+\begin{document}
+
+% Ning, A., and Petch, D., “Integrated Design of Downwind Land-Based Wind Turbines Using Analytic Gradients,” Wind Energy, Vol. 19, No. 12, pp. 2137–2152, Dec. 2016. doi:10.1002/we.1972
+
+%Rios, L. M., and Sahinidis, N. V., “Derivative-Free Optimization: a Review of Algorithms and Comparison of Software Implementations,” Journal of Global Optimization, Vol. 56, No. 3, 2013, pp. 1247–1293. doi:10.1007/s10898-012-9951-y, URL https://doi.org/10.1007/s10898-012-9951-y.
+
+%Thomas, J. J., and Ning, A., “A Method for Reducing Multi-Modality in the Wind Farm Layout Optimization Problem,” Journal of Physics: Conference Series, Vol. 1037, No. 042012, Milano, Italy, The Science of Making Torque from Wind, Jun. 2018. doi:10.1088/1742-6596/1037/4/042012
+
+%Lyu, Zhoujie, Zelu Xu, and J. R. R. A. Martins. "Benchmarking optimization algorithms for wing aerodynamic design optimization." Proceedings of the 8th International Conference on Computational Fluid Dynamics, Chengdu, Sichuan, China. Vol. 11. 2014.
+
+%Zingg, David W., Marian Nemec, and Thomas H. Pulliam. "A comparative evaluation of genetic and gradient-based algorithms applied to aerodynamic optimization." European Journal of Computational Mechanics/Revue Européenne de Mécanique Numérique 17.1-2 (2008): 103-126.
+
+
+\author{Andrew PJ Stanley and Andrew Ning}
+
+\maketitle
+
+Thank you for your thorough review of the manuscript and for your comments! We will address each of your comments and questions individually.
+
+\bigskip
+Question/Comments are in black.
+
+\color{blue} The corresponding responses are immediately below in blue.
+
+\bigskip \color{black}
+
+This paper proposed an interesting parameterization method for wind farm layout optimization, that has the potential of largely reducing the number of design variables. In general, the paper is well written, the new method is useful and results seems promising. 
+
+However, there are some major concerns the reviewer has on the current paper that he recommend this paper for a major revision. The major concerns are as follows: 
+
+\bigskip
+
+1. Missing details in the proposed boundary-grid parameterization 
+
+As the central contribution of this study, the boundary-grid parameterization is not presented in a complete and clear manner. After reading Section 2, the reviewer can’t figure out how exactly the 5 design variable can determine one and only one layout inside the specified boundary with a given number of turbines. 
+
+\bigskip
+For example, if dx and dy is too big, the number of turbines you can put in the inner grid will be very few, then there might be too many turbines placed on the perimeter, that violate the minimal spacing constraints. 
+
+\bigskip
+\color{blue}
+
+Thank you for bringing this up, our explanation in section 2.2 may have been lacking. We have added the following text to section 2.2 in order to clarify this:
+
+\smallskip
+``Note that the number of boundary turbines is determined before the number of turbines in the inner grid, to ensure that sufficient spacing in maintained between the boundary turbines.''
+
+\color{black}
+\bigskip 
+
+Also the same set of dx, dy, theta and b can define a set of grid points that actually shift in the boundary, which will correspond to different layout. So the reviewer would argue that dx, dy, theta and b alone can’t have a one-to-one map to a exact location of grid point. 
+
+\bigskip
+\color{blue}
+
+The following was added to section 2.1 to clarify the parameterization:
+\smallskip
+
+``The inner grid is centered around the wind farm center, ensuring a one-to-one mapping from the design variables to the possible wind farm layouts.''
+
+\color{black}
+\bigskip 
+
+The selection of discrete values also seems a little bit arbitrary. 
+
+\bigskip
+\color{blue}
+
+The authors agree, there is some arbitrariness to the selection of discrete variables. We tested several different combinations of discrete variable selection, and included the rules that worked the best for us. Although for specific cases there may be a better method, in general the rules we provide worked well (see the first paragraph of section 2.2). We have added the following paragraph to Section 2.2 that addresses this concern:
+
+\smallskip
+``The process outlined to select the discrete variables used in the parameterization is recommended as a starting point, and when computational resources or time is limited. We tested many different methods of how to determine the discrete values, but found that the method shown above consistently produced wind farm layouts with high energy production. With sufficient resources, some scenarios may benefit from optimizing with a different ratio of boundary turbines, or different initializations of the boundary grid. However, the results discussed in this paper were produced with the method given in this section. Because these variables are discrete, they cannot be included as design variables when using a gradient-based optimization method, because the function space would be discontinuous. But, a gradient-free optimization may benefit from including some of these discrete variables as design variables in the optimizations.''
+
+\color{black}
+\bigskip
+
+It is stated in lines 87- 88, the discrete values remain fixed, but then again, you have the situation that there are too many grid points inside the boundary (when dx and dy are small), if you have to put 45\% turbine around the boundary, you will have to remove some grid points, then which ones to remove according to what rule?
+
+\bigskip
+\color{blue}
+
+With very small wind farms (much less 4 rotor diameter average turbine spacing), our suggested discrete variable initialization would not be able to meet spacing constraints and boundary constraints. The optimizer should be able to handle this, and adjust dy and dx such that all the constraints are satisfied, however it would be helpful to start with a feasible layout. We have added the following to section 2.2 to clarify this:
+
+\smallskip
+``For extremely small wind farms, with an average turbine spacing much less than 4 rotor diameters, it may be impossible to initialize the turbine rows with $dy$ equal to be four times $dx$ and meet the minimum spacing constraints. In this case, the discrete row variable initialization would need to be adjusted.''
+
+\smallskip
+For even more extreme cases, where you can't fit all of the turbines in the wind farm because the boundary is too small, you would just need to reduce the number of turbines desired in the wind farm and repeat our initialization process. This needs to be done in any layout optimization however, and is not unique to our study. 
+
+\color{black}
+\bigskip 
+
+2. Some shortages in wind farm modelling. 
+
+First, in lines 117, it says ``the turbulence intensity is equal to 0.0325'', but shouldn’t turbulence intensity change upon the wind speed? 
+
+\bigskip
+\color{blue}
+
+Our revised paper will include results with the full 2016 Bastankhah Gaussian wake model rather than a simplified version. Details on this model will be included in the revised draft. This model also has a $k$ value that is dependent on the freestream turbulence intensity, which we will clarify.
+%This was reworded to clarify that k is equal to 0.0325, not the turbulence intensity.
+
+\color{black}
+\bigskip
+
+Second, according to Eqs.(3-4), you use the wake deficit at the rotor center to represent the average wake deficit on the whole rotor, since there is no integration over the rotor area in Eq. (4). This is problematic, as the profile of wake deficit is a Gaussian shape, and the one point deficit in the rotor center could be overestimating the mean deficit, if the two turbines are perfectly aligned. 
+
+\bigskip
+\color{blue}
+
+%Appropriate citations were added after Eq. 1 demonstrating other studies that use the hub velocity to calculate turbine power. The purpose of this study is to demonstrate the effectiveness of the parameterization method, not the accuracy of a specific wake model. 
+Our revised paper will include results where several wind speeds are sampled across the wake and averaged to find the effective wind speed used in the power calculation. This dramatically increases computational expense, but reduces the possibility of overestimating the mean deficit from the Gaussian wake.
+
+\color{black}
+\bigskip
+
+Third, there are only 5 wind speeds, and 23 wind direction sectors used in the wind resource modelling, according to Eq. (7). It has been shown in some studies that you need finer discretization, for example in (Feng and Shen 2015) in your references. This kind of coarse discretization could give you artificially optimistic AEP gains. You may also check the follow paper for recommended discretization: 
+
+Feng, Ju, and Wen Shen. ``Modelling wind for wind farm layout optimization using joint distribution of wind speed and wind direction.'' Energies 8, no. 4 (2015): 3075-3092. 
+
+\bigskip
+\color{blue}
+
+The revised draft will report the optimized AEP calculated with 360 wind direction bins and 50 wind speed bins. To avoid restrictive computation time, the optimizations are still run with fewer bins, but the final results will be reported with finer discretization.
+
+\color{black}
+\bigskip
+
+3. The missing of comparison to gradient-free optimization technique. 
+
+I understand the focus of this study is on the proposed parameterization. But without direct comparison of the gradient based optimizer to some gradient free ones, e.g., GA or RS, it looks unfounded and somehow biased for a lot of claims that says the gradient free method will be infeasible, or perform worse. 
+
+\bigskip
+\color{blue}
+
+Both gradient-based and gradient-free methods improve.  We aren’t claiming gradient-free is worse than gradient-based at the smaller dimension.  The main motivation for this work is to make these kinds of problems tractable for gradient-free approaches.  It is well documented that gradient-free methods don’t scale well to large number of design variables. Here are just a few:
+
+\smallskip
+Lyu, Zhoujie, Zelu Xu, and J. R. R. A. Martins. "Benchmarking optimization algorithms for wing aerodynamic design optimization." Proceedings of the 8th International Conference on Computational Fluid Dynamics, Chengdu, Sichuan, China. Vol. 11. 2014.
+
+\smallskip
+Rios, L. M., and Sahinidis, N. V., “Derivative-Free Optimization: a Review of Algorithms and Comparison of Software Implementations,” Journal of Global Optimization, Vol. 56, No. 3, 2013, pp. 1247–1293. doi:10.1007/s10898-012-9951-y, URL https://doi.org/10.1007/s10898-012-9951-y.
+
+\smallskip
+Zingg, David W., Marian Nemec, and Thomas H. Pulliam. "A comparative evaluation of genetic and gradient-based algorithms applied to aerodynamic optimization." European Journal of Computational Mechanics/Revue Européenne de Mécanique Numérique 17.1-2 (2008): 103-126.
+
+\smallskip
+Thomas, J. J., and Ning, A., “A Method for Reducing Multi-Modality in the Wind Farm Layout Optimization Problem,” Journal of Physics: Conference Series, Vol. 1037, No. 042012, Milano, Italy, The Science of Making Torque from Wind, Jun. 2018. doi:10.1088/1742-6596/1037/4/042012
+
+\smallskip
+Ning, A., and Petch, D., “Integrated Design of Downwind Land-Based Wind Turbines Using Analytic Gradients,” Wind Energy, Vol. 19, No. 12, pp. 2137–2152, Dec. 2016. doi:10.1002/we.1972
+
+\bigskip
+But with only 5 design variables both gradient-free and gradient-based methods should produce good results. We will add the above citations on the poor scaling of gradient-free optimization with few design varaibles.
+
+\color{black}
+\bigskip
+
+Also do you have bounds on the design variables? 
+
+\bigskip
+\color{blue}
+
+No. The only constraints were the boundary and spacing constraints mentioned in Section 4 of the paper. The following text has been added to the paper:
+
+\smallskip
+``No bound constraints, or additional constraints were used to define where the turbines must lie.''
+
+\color{black}
+\bigskip
+
+How are the constraints handled in the optimization process? Penalty function? 
+
+\bigskip
+\color{blue}
+
+We used the optimizer SNOPT, which is an SQP algorithm. A sentence in Section 4 was modified to clarify this:
+
+\smallskip
+``We used the optimizer SNOPT, which is a gradient-based optimizer that uses sequential quadratic programming, and is well suited for large-scale nonlinear problems such as the wind farm layout optimization problem ''
+
+\smallskip
+Below is a note referring to the documentation of SNOPT for further details: 
+\smallskip
+
+https://web.stanford.edu/group/SOL/guides/sndoc7.pdf
+
+\color{black}
+\bigskip
+
+4. The claim on the infeasibility of gradient-free technique for large wind farm is unfounded. 
+
+AS stated in lines 9-10, Our presented method unlocks the ability to optimize and study large wind farms, something that has been mostly infeasible in the past. But I found this unfounded, you can check the following paper: 
+
+Wagner, Markus, Kalyan Veeramachaneni, Frank Neumann, and Una-May O’Reilly. ``Optimizing the layout of 1000 wind turbines.'' European Wind Energy Association Annual Event 205209 (2011). 
+
+\bigskip
+\color{blue}
+
+This was reworded to say:
+\smallskip
+
+``Our presented method facilitates the study and both gradient-free and gradient-based optimization of large wind farms, something that has traditionally been less scalable with increasing numbers of design variables.''
+
+\color{black}
+\bigskip
+
+Also engineering wake models are very fast to run, it shouldn’t become too heavy or even infeasible for a gradient-free optimizer applied to a wind farm with 100 turbines, even if needs 10000 evaluations. 
+
+\bigskip
+\color{blue}
+
+Excellent thought. We do make several claims throughout the paper about the infeasibility of wind farm layout optimization with increasing design variables, specifically in regards to gradient-free optimization. First let's look at the paper you mentioned above. In this paper, they optimize the layout of 1000 wind turbines, which is impressive. However, we see that they used 20 cores, and a single optimization still took 12 days. On a single core, they estimate that a single optimization would take about 140 days! Now, for most applications, we believe that 140 days is infeasible, or at the very least restrictive. Even 12 days limits the study of wind farms due to computation expense.
+
+Now let's compare to our experience. Even with our fast engineering wake model, fewer turbines, and exact gradients, the direct optimizations for the first draft of our paper took 4-6 hours each to complete. With the updated wake model, (added ct curve, increased number of samples in the wake, finer bin samples to evaluate the final AEP values), the optimizations are taking at least 10 hours, some much longer. These additions really start to add up. This is with exact analytic gradients, so no additional function calls are happening to estimate gradients. Central-differenced gradients would take (at least) 3 times as long to optimize, and a gradient-free approach longer still. Additionally, we are using only one core in each optimization! Although a week or a month or longer to optimize a wind farm may not be restrictive if it is a one off occurrence, this is almost never the case. Usually the objective is to optimize the farm several times with different parameters and considerations, to see how the layout and performance is affected. Cases such as this benefit greatly fast optimization, which is provided by our presented parameterization.
+
+Additionally, higher fidelity models are not very fast to run. In these cases, reducing the number of function calls required to optimize by several orders of magnitude or more is very important. As computation improves, these higher fidelity models will be used in wind farm layout optimization. In these cases, efficient optimization will play an important role.
+
+\color{black}
+\bigskip
+
+5. Some very relevant references are missing. 
+
+Especially studies on grid-like layout optimization. The parameterization for the inner grid has been proposed in a similar way in some studies already. You may find the following two of interest: 
+
+González, Javier Serrano, Ángel Luis Trigo García, Manuel Burgos Payán, Jesús Riquelme Santos, and Ángel Gaspar González Rodríguez. ``Optimal wind-turbine micro-siting of offshore wind farms: A grid-like layout approach.'' Applied energy 200 (2017): 28-38. 
+
+Neubert, A., A. Shah, and W. Schlez. ``Maximum yield from symmetrical wind farm layouts.'' In Proceedings of DEWEK. 2010. 
+
+\bigskip
+\color{blue}
+
+We added a citation for the paper by Neubert, Shah, and Schlez. The paper by González et al. was already cited on line 41.
+
+\color{black}
+\bigskip
+
+Some minor issues: 
+
+1. It is stated in lines 20-25 that ``Although these methods can be highly effective for small numbers of design variables, the computational expense required to converge scales poorly, approximately quadratically, with increasing numbers of variables. Because of this poor computational scaling, many companies and researchers have been limited in the size of wind farms they can optimize, as the number of variables typically increases with the number of turbines.'' But I doubt that’s the case, since there are already large wind farms be designed and built in the world. Also optimization studies have been conducted for large wind farms, such as Horns Rev 1 with 80 turbines, as in one of your references (Feng and Shen, 2015). 
+
+\bigskip
+\color{blue}
+
+Refer to our discussion to your statment: ``Also engineering wake models are very fast to run, it shouldn’t become too heavy or even infeasible for a gradient-free optimizer applied to a wind farm with 100 turbines, even if needs 10000 evaluations.''
+
+Yes it can and has been done. But it has been at great computational cost. Our presented parameterization makes these types of studies much more manageable. 
+
+\color{black}
+\bigskip
+
+2. Lines 31-32 “Power losses of 10–20\% are typical from turbine interactions within a wind farm (Barthelmie et al., 2007, 2009; Briggs, 2013), and can be as high as 30–40\% for farms with closely spaced wind turbines (Stanley et al., 2019).” This is somehow misleading, power losses of 30-40\% are the worst wake case, which doesn’t happen that frequent in reality. So the actually AEP loss due to wake effects should be usually lower than 10-20\%. 
+
+\bigskip
+\color{blue}
+
+This was reworded for clarification:
+\smallskip
+
+``Power losses of 10--20\% are typical from turbine interactions within a wind farm, and can be as high as 30--40\% for farms with turbines spaced within 3 rotor diameters of each other.''
+\smallskip
+
+These values don't refer to worst case, but are in fact the overall wake loss (refer to the cited paper for more details).
+
+\color{black}
+\bigskip
+
+3. Rosenbrock function is used to demonstrate the convergence of gradient based optimizer scales better than gradient-free methods. First, you need to show what is Rosenbrock function, or at least provide a reference. 
+
+\bigskip
+\color{blue}
+
+A reference was provided.
+
+\color{black}
+\bigskip
+
+Second, this function is a function that we actually know where are the optimums, thus, we can easily see when it has converged to a local minimum. But in real life applications, we often can’t analytically prove that we have reached a local minimum, such as in layout optimization. 
+
+\bigskip
+\color{blue}
+
+True, which is why the Rosenbrock function is a good test function for determining the efficiency of optimization algorithms. Figures 1 and 11 of the paper and the associated discussions demonstrate the multimodality and difficulty of the wind farm layout optimization problem.
+
+\color{black}
+\bigskip
+
+Third, for such problem, converge faster (typically for gradient based methods) is just one aspect, the other aspect is the quality of the optimized results, i.e., whether the solution is close to the global optimum. Usually it is know that gradient free methods converges slower but has a higher probability to reach the global optimum, while gradient based methods converge faster but are also easier to be trapped in a local minimum. 
+
+\bigskip
+\color{blue}
+
+Correct. However with large problems, convergence speed is a very important aspect. This simple example was used to highlight (and we feel that it is done so effectively) the huge importance of efficient computation, and the extreme effects that inefficient optimization can have on computation time.
+
+\color{black}
+\bigskip
+
+4. Eq. (6), U\_mean should be scale factor of the Weibull distribution. Note that the scale factor is not the same thing as the mean wind speed, instead the mean wind speed should be a function of scale factor and shape factor. 
+
+\bigskip
+\color{blue}
+
+This has been corrected in the revised manuscript. Final results include this correction, and it is represented in Equation 6.
+
+\color{black}
+\bigskip
+
+5. Line 275-276 states that ``BG parameterization, cabling requirements can be clearly minimized by running cables across each of the rows, and around the boundary without the need for complex cabling algorithms.'' This is not true, as you still need to decide the location of sub-station, the exact topology of the cables and select cable types for different connections, thus, not necessarily easier than any random layout.
+
+\bigskip
+\color{blue}
+
+This claim was removed from the paper.
+
+\color{black}
+\bigskip
+
+
+\end{document}

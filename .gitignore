@@ -1,3 +1,10 @@
 *.pyc
 *.out
 build*
+*.log
+*.gz
+*.aux
+*.bbl
+*.blg
+*.zip
+*.DS_STORE
